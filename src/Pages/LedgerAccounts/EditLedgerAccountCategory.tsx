@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@apollo/client";
-import { UPDATE_LEDGER_CATEGORIES } from "@/components/ledger-categories-list/mutation";
+import { UPDATE_LEDGER_ACCOUNT_CATEGORIES } from "@/components/ledger-categories-list/mutation";
 import queryaccountcategoriesList from "@/components/ledger-categories-list/query";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,7 @@ const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
     variables: { ledgerCategory }, // Pass as a variable to the query
   });
 
-  const [updateLedgerAccountsCategoryMutation] = useMutation(UPDATE_LEDGER_CATEGORIES);
+  const [updateLedgerAccountsCategoryMutation] = useMutation(UPDATE_LEDGER_ACCOUNT_CATEGORIES);
 
   const onSubmit = async (data: LedgerCategoryFormInputs) => {
     try {
