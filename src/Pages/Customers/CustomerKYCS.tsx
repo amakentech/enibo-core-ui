@@ -14,6 +14,7 @@ import { queryBusinessKYCs } from "@/types/queries";
 interface CustomerKYCSProps {}
 
 const CustomerKYCS: FC<CustomerKYCSProps> = () => {
+
   const [individualKycs, setIndividualKycs] = useState<KYCIndividual[]>([]);
   const [businessKycs, setBusinessKycs] = useState<KYCBusiness[]>([]);
   const navigate = useNavigate();

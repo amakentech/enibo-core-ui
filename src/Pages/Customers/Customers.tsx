@@ -6,9 +6,13 @@ import { Customer } from "@/types/global";
 import { Link } from "react-router-dom";
 import { columns } from "@/components/customer-list/columns";
 import { FaPlus } from "react-icons/fa";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import queryCustomersList from "@/components/customer-list/query";
 import { Row } from "@tanstack/react-table";
+import { DELETE_CUSTOMER } from "@/types/mutations";
+import { toast } from "@/components/ui/use-toast";
+import DeleteWarning from "@/components/deleteWarning";
+import { useAppState } from "@/store/state";
 
 interface CustomersProps {}
 
@@ -16,6 +20,7 @@ const Customers: FC<CustomersProps> = () => {
   const [Customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { appState, setAppState } = useAppState();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,10 +43,64 @@ const Customers: FC<CustomersProps> = () => {
   }, [data, queryLoading, queryError]);
   const handleEdit = (selectedRows: Row<Customer>[]) => {
     console.log("Edit", selectedRows);
+    const individualData = {
+      kycId: selectedRows[0].original.retail?.individualKYC?.IndividualKYCId,
+      createdBy: "John Doe",
+      kycType: selectedRows[0].original.retail?.individualKYC?.kycType,
+      status: "Active",
+    }
+    const productData = {
+      productTypes: selectedRows[0].original.retail?.productTypes,
+      accountCurrency: selectedRows[0].original.retail?.accountCurrency,
+      riskRating: selectedRows[0].original.retail?.riskRating,
+    }
+    setAppState({
+      ...appState,
+      customerType: selectedRows[0].original.customerType,
+      individuals: [...appState.individuals, individualData],
+      product: productData,
+      customerData: selectedRows[0].original,
+    })
+    navigate(`/customers/customer-wizard/${selectedRows[0].original.customerId}`);
+  };
+  
+  const [deleteCustomer] = useMutation(DELETE_CUSTOMER)
+  
+  const deleteRows = async (selectedRows: Row<Customer>[]) => {
+    const deletePromises = selectedRows.map((row) => {
+      //this is the mutation function
+      return deleteCustomer({
+        variables: {
+          customerId: row.original.customerId,
+        },
+      });
+    });
+
+    const result = await Promise.all(deletePromises);
+
+    if (result) {
+      window.location.reload();
+      toast({
+        title: "Record deleted successfully",
+        description: `${selectedRows.length} record(s) deleted successfully`,
+      });
+    }
   };
 
   const handleDelete = (selectedRows: Row<Customer>[]) => {
-    console.log("Delete", selectedRows);
+    try {
+      toast({
+        title: "Are you sure? The operation is irreversible",
+        description: (
+          <DeleteWarning handleDeletion={() => deleteRows(selectedRows)} />
+        ),
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error during deletion",
+      });
+    }
   };
 
   const handleCopy = (selectedRows: Row<Customer>[]) => {
