@@ -364,6 +364,7 @@ const NewFeeTypesForm: FC<NewFeeTypesFormProps> = () => {
                     <SelectItem value="Weekly">Weekly</SelectItem>
                     <SelectItem value="Monthly">Monthly</SelectItem>
                     <SelectItem value="Yearly">Yearly</SelectItem>
+                    <SelectItem value="Adhoc">Adhoc</SelectItem>
                   </SelectContent>
                 </Select>
               )}

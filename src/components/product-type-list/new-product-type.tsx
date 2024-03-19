@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import RiAddLine from "remixicon-react/AddLineIcon";
+import { X } from "lucide-react";
 
 const productTypeSchema = z.object({
   productTypeId: z.string().optional(),
@@ -34,9 +36,8 @@ const productTypeSchema = z.object({
   active: z.boolean().optional(),
   interestBearing: z.boolean().optional(),
   fixedInterestRate: z
-    .string()
-    .min(1, { message: "Fixed Interest Rate is required" }),
-  effectiveDate: z.string().min(3, { message: "Effective Date is required" }),
+    .string(),
+  effectiveDate: z.string(),
   fees: z.boolean().optional(),
   feeTypes: z.string().min(3, { message: "Fee Types is required" }),
   riskRating: z.string().min(1, { message: "Risk Rating is required" }),
@@ -320,6 +321,13 @@ const NewProductTypeForm: FC<NewProductTypeFormProps> = () => {
     navigate("/administration/products/product-types");
   };
 
+  const [feeDetails, setFeeDetails] = useState([
+    {
+      fixedInterestRate: 0,
+      effectiveDate: "",
+    },
+  ]);
+
   return (
     <section>
       <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
@@ -382,33 +390,72 @@ const NewProductTypeForm: FC<NewProductTypeFormProps> = () => {
               </span>
             )}
           </div>
-          <div className="flex w-full gap-2">
-            <div className="w-full">
-              <Label>Fixed Interest Rate</Label>
-              <Input
-                type="number"
-                placeholder="Fixed Interest Rate"
-                {...register("fixedInterestRate")}
-              />
-              {errors.fixedInterestRate && (
-                <span className="text-sm text-red-500">
-                  {errors.fixedInterestRate.message}
-                </span>
-              )}
+
+          <div className="flex flex-col w-full gap-2">
+            <div className="flex justify-end -my-4">
+              <Button
+                variant="link"
+                onClick={() =>
+                  setFeeDetails((prev) => [
+                    ...prev,
+                    { fixedInterestRate: 0, effectiveDate: "" },
+                  ])
+                }
+              >
+                <RiAddLine size={10} />
+                Add New
+              </Button>
             </div>
-            <div className="w-full">
-              <Label>Effective Date</Label>
-              <Input
-                type="date"
-                placeholder="Effective Date"
-                {...register("effectiveDate")}
-              />
-              {errors.effectiveDate && (
-                <span className="text-sm text-red-500">
-                  {errors.effectiveDate.message}
-                </span>
-              )}
-            </div>
+
+            {feeDetails.map((_fee, index) => (
+  <div key={index} className="flex w-full gap-2">
+    <div className="flex w-full">
+      <div className="w-full pr-8">
+        <Label>Fee Amount</Label>
+        <Input
+          type="number"
+          placeholder="Fee Amount"
+          {...register(`fixedInterestRate`)}
+        />
+        {errors.fixedInterestRate && (
+          <span className="text-sm text-red-500">
+            {errors.fixedInterestRate.message}
+          </span>
+        )}
+      </div>
+      <div className="w-full">
+        <Label>Effective Date</Label>
+        <Input
+          type="date"
+          placeholder="Effective Date"
+          {...register(`effectiveDate`)}
+        />
+        {errors.effectiveDate && (
+          <span className="text-sm text-red-500">
+            {errors.effectiveDate.message}
+          </span>
+        )}
+      </div>
+    </div>
+    {index !== 0 && ( // Conditionally render X button for all records except the first one
+      <div className="w-[5%] flex justify-center items-end">
+        <Button
+          size="icon"
+          className=""
+          onClick={() => {
+            setFeeDetails((prev) => {
+              const newFeeDetails = [...prev];
+              newFeeDetails.splice(index, 1);
+              return newFeeDetails;
+            });
+          }}
+        >
+          <X className="w-4 h-4 text-red-300" />
+        </Button>
+      </div>
+    )}
+  </div>
+))}
           </div>
           <div>
             <div className="flex items-center gap-2">
