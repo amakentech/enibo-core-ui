@@ -33,12 +33,11 @@ export const columns: ColumnDef<Customer>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: "id",
-    accessorFn: (row) => row.customerId,
+    accessorKey: "customerId",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Customer ID" />
     ),
-    cell: ({ row }) => <div className=""><Link to={`/customers/${row.getValue("id")}`}>{row.getValue("id")}</Link></div>,
+    cell: ({ row }) => <div className=""><Link to={`/customers/${row.getValue("customerId")}`}>{row.getValue("customerId")}</Link></div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -53,7 +52,7 @@ export const columns: ColumnDef<Customer>[] = [
   },
     {
         accessorKey: "customer",
-        accessorFn: (row) => row.business?.legalEntityName || `${row.retail?.firstName + " " + row.retail?.lastName}`,
+        accessorFn: (row) => row.business?.legalEntityName || `${row.retail?.individualKYC?.firstName + " " + row.retail?.individualKYC?.lastName}`,
         header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Customer" />
         ),
@@ -81,13 +80,23 @@ export const columns: ColumnDef<Customer>[] = [
       enableSorting: true,
       enableHiding: true,
   },
-  
   {
-    accessorKey: "accountNumber",
+    accessorKey: "accountType",
+    accessorFn: (row) => row.business?.productTypes?.productTypeName || row.retail?.productTypes?.productTypeName,
     header: ({ column }) => (
-    <DataTableColumnHeader column={column} title="Account Number" />
+    <DataTableColumnHeader column={column} title="Product Type" />
     ),
-    cell: ({ row }) => <div className="">{row.getValue("accountNumber")}</div>,
+    cell: ({ row }) => <div className="">{row.getValue("accountType")}</div>,
+    enableSorting: true,
+    enableHiding: true,
+  },
+  {
+    accessorKey: "accounts",
+    accessorFn: (row) => row.accounts?.length || row.accounts?.length,
+    header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Number of Accounts" />
+    ),
+    cell: ({ row }) => <div className="">{row.getValue("accounts")}</div>,
     enableSorting: true,
     enableHiding: true,
   },

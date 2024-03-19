@@ -13,13 +13,16 @@ import NewKYC from "./NewKYC";
 import { useAppState } from "@/store/state";
 import NewBKYC from "./NewBKYC";
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ValueIcon } from "@radix-ui/react-icons";
 
 interface CustomerKYCProps {}
 
 const CustomerKYC: FC<CustomerKYCProps> = () => {
+  const {customerId} = useParams();
+  const isEditMode = customerId ? true : false;
   const { appState, setAppState } = useAppState();
+  console.log(appState);
   const individuals = appState.individuals;
   const businesses = appState.businesses;
 
@@ -41,6 +44,14 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
       setSelectedRows([]);
     }
   };
+
+  const handleDelete = (index: number) => {
+    const newIndividuals = individuals.filter((_, i) => i !== index);
+    setAppState({
+      ...appState,
+      individuals: newIndividuals,
+    });
+  }
 
   const navigate = useNavigate();
   const saveData = (customer: string) => {
@@ -150,10 +161,11 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
                     <TableHead>Created By</TableHead>
                     <TableHead>KYC Type</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {individuals?.map((individual) => (
+                  {individuals?.map((individual, index) => (
                     <TableRow key={individual.kycId}>
                       <TableCell>
                         <input
@@ -166,6 +178,9 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
                       <TableCell>{individual.createdBy}</TableCell>
                       <TableCell>{individual.kycType}</TableCell>
                       <TableCell>{individual.status}</TableCell>
+                      <TableCell>
+                        <Button onClick={()=>handleDelete(index)}>Delete</Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -227,7 +242,7 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
       )}
       {appState.customerType !== "" && (<div className="flex gap-2">
         <Button>Save</Button>
-        <Button onClick={() => navigate("/customers/customer-wizard/products")}>
+        <Button onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/products`) : navigate("/customers/customer-wizard/products")}>
           Next
         </Button>
       </div>)}

@@ -242,6 +242,19 @@ export const CREATE_MANDATE = gql`
   }
 `;
 
+export const UPDATE_MANDATE = gql`
+mutation UpdateMandate($mandateId: String!, $signatory: String!, $category: String!, $mandateType: String!, $modifiedBy: String!, $modifiedOn: String!) {
+  updateMandate(mandateId: $mandateId, signatory: $signatory, category: $category, mandateType: $mandateType, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    mandateId
+    signatory
+    category
+    mandateType
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
 export const CREATE_RETAIL = gql`
   mutation CreateRetail(
     $retailType: String!
@@ -264,45 +277,502 @@ export const CREATE_RETAIL = gql`
       modifiedOn: $modifiedOn
     ) {
       retailId
+    retailType
+    individualKYC {
+      IndividualKYCId
+      kycType
+      designation
+      firstName
+      middleName
+      lastName
+      phoneNumber
+      emailAddress
+      postalAddress
+      physicalAddress
+      country
+      taxNumber
+      idType
+      idNumber
+      sex
+      nationality
+      riskRating
+      attachDocumentsField
+      signature
+      modifiedBy
+      modifiedOn
+    }
+    productTypes {
+      productTypeId
+      productTypeName
+      description
+      active
+      interestBearing
+      fixedInterestRate
+      effectiveDate
+      fees
+      feeTypes {
+        feeTypeId
+        feeTypeName
+        description
+        transactionTypes {
+          transactionTypeId
+          transactionTypeName
+          transactionTypeCode
+          description
+          currency
+          modifiedBy
+          modifiedOn
+        }
+        paymentFrequency
+        effectiveDate
+        fixedRate
+        modifiedBy
+        modifiedOn
+      }
+      riskRating
+      prefix
+      numberSchema
+      startingValue
+      modifiedBy
+      modifiedOn
+    }
+    accountCurrency
+    riskRating
+    accountMandates
+    modifiedBy
+    modifiedOn
+    }
+  }
+`;
+
+export const UPDATE_RETAIL = gql`
+mutation UpdateRetail($retailId: String!, $retailType: String!, $individualKyc: String!, $productTypes: String!, $accountCurrency: String!, $riskRating: String!, $accountMandates: [String!]!, $modifiedBy: String!, $modifiedOn: String!) {
+  updateRetail(retailId: $retailId, retailType: $retailType, individualKYC: $individualKyc, productTypes: $productTypes, accountCurrency: $accountCurrency, riskRating: $riskRating, accountMandates: $accountMandates, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    retailId
+    retailType
+    individualKYC {
+      IndividualKYCId
+      kycType
+      designation
+      firstName
+      middleName
+      lastName
+      phoneNumber
+      emailAddress
+      postalAddress
+      physicalAddress
+      country
+      taxNumber
+      idType
+      idNumber
+      sex
+      nationality
+      riskRating
+      attachDocumentsField
+      signature
+      modifiedBy
+      modifiedOn
+    }
+    productTypes {
+      productTypeId
+      productTypeName
+      description
+      active
+      interestBearing
+      fixedInterestRate
+      effectiveDate
+      fees
+      feeTypes {
+        feeTypeId
+        feeTypeName
+        description
+        transactionTypes {
+          transactionTypeId
+          transactionTypeName
+          transactionTypeCode
+          description
+          currency
+          modifiedBy
+          modifiedOn
+        }
+        paymentFrequency
+        effectiveDate
+        fixedRate
+        modifiedBy
+        modifiedOn
+      }
+      riskRating
+      prefix
+      numberSchema
+      startingValue
+      modifiedBy
+      modifiedOn
+    }
+    accountCurrency
+    riskRating
+    accountMandates
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
+export const CREATE_CUSTOMER = gql`
+mutation CreateCustomer($customerType: String, $retail: String, $business: String, $accounts: [String], $accountMandates: [String], $mandateRules: [String], $modifiedBy: String, $modifiedOn: String) {
+  createCustomer(customerType: $customerType, retail: $retail, business: $business, accounts: $accounts, accountMandates: $accountMandates, mandateRules: $mandateRules, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    customerId
+    customerType
+    retail {
+      retailId
       retailType
-      individualKYC
-      productTypes
+      individualKYC {
+        IndividualKYCId
+        kycType
+        designation
+        firstName
+        middleName
+        lastName
+        phoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        country
+        taxNumber
+        idType
+        idNumber
+        sex
+        nationality
+        riskRating
+        attachDocumentsField
+        signature
+        modifiedBy
+        modifiedOn
+      }
+      productTypes {
+        productTypeId
+        productTypeName
+        description
+        active
+        interestBearing
+        fixedInterestRate
+        effectiveDate
+        fees
+        feeTypes {
+          feeTypeId
+          feeTypeName
+          description
+          transactionTypes {
+            transactionTypeId
+            transactionTypeName
+            transactionTypeCode
+            description
+            currency
+            modifiedBy
+            modifiedOn
+          }
+          paymentFrequency
+          effectiveDate
+          fixedRate
+          modifiedBy
+          modifiedOn
+        }
+        riskRating
+        prefix
+        numberSchema
+        startingValue
+        modifiedBy
+        modifiedOn
+      }
       accountCurrency
       riskRating
       accountMandates
       modifiedBy
       modifiedOn
     }
-  }
-`;
-
-export const CREATE_CUSTOMER = gql`
-  mutation CreateCustomer(
-    $customerType: String
-    $retail: String
-    $business: String
-    $accountMandates: [String]
-    $modifiedBy: String
-    $modifiedOn: String
-  ) {
-    createCustomer(
-      customerType: $customerType
-      retail: $retail
-      business: $business
-      accountMandates: $accountMandates
-      modifiedBy: $modifiedBy
-      modifiedOn: $modifiedOn
-    ) {
-      customerId
-      customerType
-      retail
-      business
+    business {
+      businessId
+      legalEntityName
+      businessKYC
+      productTypes
+      accountCurrency
+      riskRating
+      directorsKYC
       accountMandates
       modifiedBy
       modifiedOn
     }
+    accounts {
+      id
+      name
+      account_owner
+      account_number
+      account_type
+      description
+      branch_id
+      normal_balance
+    }
+    accountMandates {
+      mandateId
+      signatory
+      category
+      mandateType
+      modifiedBy
+      modifiedOn
+    }
+    mandateRules {
+      mandateRuleId
+      customerId
+      mandateType
+      signingRule
+      minimumTransactionAmount
+      maximumTransactionAmount
+      maximumDailyLimit
+      modifiedBy
+      modifiedOn
+    }
+    modifiedBy
+    modifiedOn
   }
+}
 `;
+
+export const UPDATE_CUSTOMER = gql`
+mutation UpdateCustomer($customerId: String, $customerType: String, $retail: String, $business: String, $accounts: [String], $accountMandates: [String], $mandateRules: [String], $modifiedBy: String, $modifiedOn: String) {
+  updateCustomer(customerId: $customerId, customerType: $customerType, retail: $retail, business: $business, accounts: $accounts, accountMandates: $accountMandates, mandateRules: $mandateRules, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    business {
+      businessId
+      legalEntityName
+      businessKYC
+      productTypes
+      accountCurrency
+      riskRating
+      directorsKYC
+      accountMandates
+      modifiedBy
+      modifiedOn
+    }
+    retail {
+      retailId
+      retailType
+      individualKYC {
+        IndividualKYCId
+        kycType
+        designation
+        firstName
+        middleName
+        lastName
+        phoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        country
+        taxNumber
+        idType
+        idNumber
+        sex
+        nationality
+        riskRating
+        attachDocumentsField
+        signature
+        modifiedBy
+        modifiedOn
+      }
+      productTypes {
+        productTypeId
+        productTypeName
+        description
+        active
+        interestBearing
+        fixedInterestRate
+        effectiveDate
+        fees
+        feeTypes {
+          feeTypeId
+          feeTypeName
+          description
+          transactionTypes {
+            transactionTypeId
+            transactionTypeName
+            transactionTypeCode
+            description
+            currency
+            modifiedBy
+            modifiedOn
+          }
+          paymentFrequency
+          effectiveDate
+          fixedRate
+          modifiedBy
+          modifiedOn
+        }
+        riskRating
+        prefix
+        numberSchema
+        startingValue
+        modifiedBy
+        modifiedOn
+      }
+      accountCurrency
+      riskRating
+      accountMandates
+      modifiedBy
+      modifiedOn
+    }
+    accounts {
+      id
+      name
+      account_owner
+      account_number
+      account_type
+      description
+      branch_id
+      normal_balance
+    }
+    accountMandates {
+      mandateId
+      signatory
+      category
+      mandateType
+      modifiedBy
+      modifiedOn
+    }
+    customerId
+    customerType
+    mandateRules {
+      mandateRuleId
+      customerId
+      mandateType
+      signingRule
+      minimumTransactionAmount
+      maximumTransactionAmount
+      maximumDailyLimit
+      modifiedBy
+      modifiedOn
+    }
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
+export const DELETE_CUSTOMER = gql`
+mutation DeleteCustomer($customerId: String) {
+  deleteCustomer(customerId: $customerId) {
+    customerId
+    customerType
+    retail {
+      retailId
+      retailType
+      individualKYC {
+        IndividualKYCId
+        kycType
+        designation
+        firstName
+        middleName
+        lastName
+        phoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        country
+        taxNumber
+        idType
+        idNumber
+        sex
+        nationality
+        riskRating
+        attachDocumentsField
+        signature
+        modifiedBy
+        modifiedOn
+      }
+      productTypes {
+        productTypeId
+        productTypeName
+        description
+        active
+        interestBearing
+        fixedInterestRate
+        effectiveDate
+        fees
+        feeTypes {
+          feeTypeId
+          feeTypeName
+          description
+          transactionTypes {
+            transactionTypeId
+            transactionTypeName
+            transactionTypeCode
+            description
+            currency
+            modifiedBy
+            modifiedOn
+          }
+          paymentFrequency
+          effectiveDate
+          fixedRate
+          modifiedBy
+          modifiedOn
+        }
+        riskRating
+        prefix
+        numberSchema
+        startingValue
+        modifiedBy
+        modifiedOn
+      }
+      accountCurrency
+      riskRating
+      accountMandates
+      modifiedBy
+      modifiedOn
+    }
+    business {
+      businessId
+      legalEntityName
+      businessKYC
+      productTypes
+      accountCurrency
+      riskRating
+      directorsKYC
+      accountMandates
+      modifiedBy
+      modifiedOn
+    }
+    accounts {
+      id
+      name
+      account_owner
+      account_number
+      account_type
+      description
+      branch_id
+      normal_balance
+    }
+    accountMandates {
+      mandateId
+      signatory
+      category
+      mandateType
+      modifiedBy
+      modifiedOn
+    }
+    mandateRules {
+      mandateRuleId
+      customerId
+      mandateType
+      signingRule
+      minimumTransactionAmount
+      maximumTransactionAmount
+      maximumDailyLimit
+      modifiedBy
+      modifiedOn
+    }
+    modifiedBy
+    modifiedOn
+  }
+}
+`
 
 export const CREATE_MANDATE_RULE = gql`
   mutation CreateMandateRule(
@@ -325,6 +795,7 @@ export const CREATE_MANDATE_RULE = gql`
       modifiedBy: $modifiedBy
       modifiedOn: $modifiedOn
     ) {
+      mandateRuleId
       customerId
       mandateType
       signingRule
@@ -336,6 +807,22 @@ export const CREATE_MANDATE_RULE = gql`
     }
   }
 `;
+
+export const UPDATE_MANDATE_RULE = gql`
+mutation UpdateMandateRule($mandateRuleId: String!, $customerId: String!, $mandateType: String!, $signingRule: String!, $minimumTransactionAmount: String!, $maximumTransactionAmount: String!, $maximumDailyLimit: String!, $modifiedBy: String!, $modifiedOn: String!) {
+  updateMandateRule(mandateRuleId: $mandateRuleId, customerId: $customerId, mandateType: $mandateType, signingRule: $signingRule, minimumTransactionAmount: $minimumTransactionAmount, maximumTransactionAmount: $maximumTransactionAmount, maximumDailyLimit: $maximumDailyLimit, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    mandateRuleId
+    customerId
+    mandateType
+    signingRule
+    minimumTransactionAmount
+    maximumTransactionAmount
+    maximumDailyLimit
+    modifiedBy
+    modifiedOn
+  }
+}
+`
 
 export const UPDATE_MANDATE_TYPE = gql`
   mutation UpdateMandateType(
@@ -705,6 +1192,36 @@ mutation DeleteLedgerRule($deleteLedgerRuleId: String!) {
     debitAccount
     creditAccount
     modifiedBy
+  }
+}
+`
+
+export const CREATE_ACCOUNT = gql`
+mutation CreateAccount($name: String!, $accountOwner: String!, $accountNumber: String!, $accountType: String!, $description: String!, $branchId: String!, $normalBalance: String!) {
+  createAccount(name: $name, account_owner: $accountOwner, account_number: $accountNumber, account_type: $accountType, description: $description, branch_id: $branchId, normal_balance: $normalBalance) {
+    id
+    name
+    account_owner
+    account_number
+    account_type
+    description
+    branch_id
+    normal_balance
+  }
+}
+`
+
+export const UPDATE_ACCOUNT = gql`
+mutation UpdateAccount($updateAccountId: String!, $name: String!, $accountOwner: String!, $accountNumber: String!, $accountType: String!, $description: String!, $branchId: String!, $normalBalance: String!) {
+  updateAccount(id: $updateAccountId, name: $name, account_owner: $accountOwner, account_number: $accountNumber, account_type: $accountType, description: $description, branch_id: $branchId, normal_balance: $normalBalance) {
+    id
+    name
+    account_owner
+    account_number
+    account_type
+    description
+    branch_id
+    normal_balance
   }
 }
 `

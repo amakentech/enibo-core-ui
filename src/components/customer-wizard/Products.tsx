@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { ProductType } from "@/types/global";
 import { gql, useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppState } from "@/store/state";
 
 const businessRetailSchema = z.object({
@@ -35,9 +35,13 @@ const GET_PRODUCT_TYPES = gql`
   }
 `;
 
+
+
 interface ProductsProps {}
 
 const Products: FC<ProductsProps> = () => {
+  const {customerId} = useParams();
+  const isEditMode = customerId ? true : false;
   const [ProductTypes, setProductTypes] = useState<ProductType[]>([]);
   const {appState, setAppState} = useAppState();
 
@@ -45,14 +49,23 @@ const Products: FC<ProductsProps> = () => {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<BusinessRetailInput>({
     resolver: zodResolver(businessRetailSchema),
   });
+  
+  useEffect(() => {
+    if(isEditMode && appState && appState.product && appState.product.productTypes && appState.product.accountCurrency && appState.product.riskRating) {
+      setValue("productTypes", appState.product.productTypes.productTypeId);
+      setValue("accountCurrency", appState.product.accountCurrency);
+      setValue("riskRating", appState.product.riskRating);
+    }
+  }, [isEditMode, setValue, appState]);
 
   const saveData = (data: BusinessRetailInput) => { 
     setAppState({
       ...appState,
-      product: {
+      productInput: {
         productTypes: data.productTypes,
         accountCurrency: data.accountCurrency,
         riskRating: data.riskRating,
@@ -158,13 +171,13 @@ const Products: FC<ProductsProps> = () => {
           <Button type="submit">Save</Button>
           <Button
             type="button"
-            onClick={() => navigate("/customers/customer-wizard/")}
+            onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}`) : navigate("/customers/customer-wizard")}
           >
             Back
           </Button>
           <Button 
           type="button"
-          onClick={() => navigate("/customers/customer-wizard/mandates")}
+          onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/mandates`) : navigate("/customers/customer-wizard/mandates")}
           >Next</Button>
         </div>
       </form>

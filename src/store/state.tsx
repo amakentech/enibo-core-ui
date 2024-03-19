@@ -1,3 +1,4 @@
+import { Customer, ProductType } from "@/types/global";
 import {
   ReactNode,
   createContext,
@@ -8,6 +9,7 @@ import {
 } from "react";
 
 interface AppState {
+  customerData: Customer | null;
   session: {
     token: string;
     user: {
@@ -54,10 +56,15 @@ interface AppState {
     modifiedOn: string;
   }
   product: {
+    productTypes: ProductType | undefined;
+    accountCurrency: string | undefined;
+    riskRating: string | undefined;
+  }
+  productInput: {
     productTypes: string;
     accountCurrency: string;
     riskRating: string;
-  }
+  };
   mandates: {
     mandateId: string;
     signatory: string;
@@ -92,7 +99,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   // Use useState with the initial state
   const [appState, setAppState] = useState<AppState>({
     // Initialize your state properties here
-   
+    productInput: {
+      productTypes: "",
+      accountCurrency: "",
+      riskRating: "",
+    },
+    customerData: null,
     session: {
       token: "",
       user: {
@@ -129,7 +141,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       modifiedOn: "",
     },
     product: {
-      productTypes: "",
+      productTypes: undefined,
       accountCurrency: "",
       riskRating: "",
     },

@@ -14,9 +14,10 @@ import {
 import {  KYCIndividual, MandateType } from "@/types/global";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppState } from "@/store/state";
-import { CREATE_CUSTOMER, CREATE_MANDATE, CREATE_RETAIL } from "@/types/mutations";
+import { CREATE_ACCOUNT, CREATE_CUSTOMER, CREATE_MANDATE, CREATE_RETAIL, UPDATE_ACCOUNT, UPDATE_CUSTOMER, UPDATE_MANDATE, UPDATE_RETAIL } from "@/types/mutations";
+import { toast } from "../ui/use-toast";
 
 const businessRetailSchema = z.object({
   mandates: z.array(
@@ -71,6 +72,8 @@ const GET_INDIVIDUAL_KYCS = gql`
 interface CustomerMandatesProps {}
 
 const CustomerMandates: FC<CustomerMandatesProps> = () => {
+  const {customerId} = useParams();
+  const isEditMode = customerId ? true : false;
   const [mandateTypes, setMandateTypes] = useState<MandateType[]>([]);
   const [individualKYCs, setIndividualKYCs] = useState<KYCIndividual[]>([]);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -87,9 +90,23 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<BusinessRetailInput>({
     resolver: zodResolver(businessRetailSchema),
   });
+  useEffect(() => {
+    if(isEditMode && appState.customerData){
+      const newMandates = appState.customerData.accountMandates.map((mandate) => {
+        return {
+          signatory: mandate.signatory,
+          mandateType: mandate.mandateType,
+          category: mandate.category,
+        }
+      }
+      )
+      setValue("mandates", newMandates)
+    }
+  }, [appState, isEditMode, setValue]);
 
   const { data: mandateData } = useQuery(GET_MANDATE_TYPES);
   useEffect(() => {
@@ -107,10 +124,14 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
   }, [individualKycData]);
   const navigate = useNavigate();
   const [createMandate] = useMutation(CREATE_MANDATE);
+  const [updateMandate] = useMutation(UPDATE_MANDATE);
   const [createRetail] = useMutation(CREATE_RETAIL);
+  const [updateRetail] = useMutation(UPDATE_RETAIL);
   const [createCustomer] = useMutation(CREATE_CUSTOMER);
-  const saveData = async (data: BusinessRetailInput) => {
-    console.log(data);
+  const [updateCustomer] = useMutation(UPDATE_CUSTOMER);
+  const [createAccount] = useMutation(CREATE_ACCOUNT)
+  const [updateAccount] = useMutation(UPDATE_ACCOUNT)
+  const saveData = async (data: BusinessRetailInput) => { 
     //loop through mandates and create a new mandate for each and return the new mandates
     const mandates = await Promise.all(
       data.mandates.map(async (mandate) => {
@@ -128,14 +149,13 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
         return response.data.createMandate; // Assuming the response contains the data property
       })
     );
-    
     if(mandates && mandates.length > 0){
       setAppState({
         ...appState,
         mandates: mandates,
       })
     }
-
+    // Create Retail and Customer
     const retail = await createRetail({
       variables: {
         retailType: appState.customerType,
@@ -150,32 +170,179 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
           .split(".")[0],
       },
     })
-    console.log(retail.data.createRetail)
     setAppState({
       ...appState,
       retail: retail.data.createRetail.retailId,
     })
+    
+    const newMandates = mandates.map((mandate) => mandate.mandateId)
     const customer = await createCustomer({
       variables: {
         customerType: appState.customerType,
         retail: retail.data.createRetail.retailId,
-        accountMandates: appState.mandates,
+        accountMandates: newMandates,
         modifiedBy: user.id,
         modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
           .toISOString()
           .split(".")[0],
       },
     })
-    console.log(customer)
+  
     setAppState({
       ...appState,
       customer: customer.data.createCustomer.customerId,
     })
+
+    //create account for customer
+    if(customer.data.createCustomer.customerId){
+      const account = await createAccount({
+        variables: {
+          name: customer.data.createCustomer.customerId,
+          accountOwner: customer.data.createCustomer.customerId,
+          accountNumber: customer.data.createCustomer.customerId,
+          description: `Retail Account for ${customer.data.createCustomer.customerId}`,
+          accountType: "Retail",
+          branchId: `BRANCH-${customer.data.createCustomer.customerId}`,
+          normalBalance: "CREDIT",
+        },
+      })
+
+      //update customer with account
+      if(account){
+        const updatedCustomer = await updateCustomer({
+          variables: {
+            customerId: customer.data.createCustomer.customerId,
+            accounts: [account.data.createAccount.id],
+            modifiedBy: user.id,
+            modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+              .toISOString()
+              .split(".")[0],
+          },
+        })
+        toast({
+          title: "Customer Created",
+          description: `Customer ${updatedCustomer.data.updateCustomer.customerId} has been created successfully`,
+        })
+      }
+    }
+    toast({
+      title: "Mandates Saved",
+      description: "Mandates have been saved successfully",
+    })
   };
+
+  const updateData = async (data: BusinessRetailInput) => {
+    //loop through mandates and create a new mandate for each and return the new mandates
+    const mandates = await Promise.all(
+      data.mandates.map(async (mandate) => {
+        const response = await updateMandate({
+          variables: {
+            mandateId: appState.customerData?.accountMandates[0].mandateId,
+            signatory: mandate.signatory,
+            mandateType: mandate.mandateType,
+            category: mandate.category,
+            modifiedBy: user.id,
+            modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+              .toISOString()
+              .split(".")[0],
+          },
+        });
+        return response.data.updateMandate; // Assuming the response contains the data property
+      })
+    );
+    if(mandates && mandates.length > 0){
+      setAppState({
+        ...appState,
+        mandates: mandates,
+      })
+    }
+    
+    // Create Retail and Customer
+    const retail = await updateRetail({
+      variables: {
+        retailId: appState.customerData?.retail?.retailId,
+        retailType: appState.customerData?.customerType,
+        individualKyc: appState.individuals[0].kycId,
+        productTypes: appState.productInput.productTypes,
+        accountCurrency: appState.product.accountCurrency,
+        riskRating: appState.product.riskRating,
+        accountMandates: mandates.map((mandate) => mandate.mandateId),
+        modifiedBy: user.id,
+        modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+          .toISOString()
+          .split(".")[0],
+      },
+    })
+    setAppState({
+      ...appState,
+      retail: retail.data.updateRetail.retailId,
+    })
+    
+    const newMandates = mandates.map((mandate) => mandate.mandateId)
+    const customer = await updateCustomer({
+      variables: {
+        customerId: appState.customerData?.customerId,
+        customerType: appState.customerData?.customerType,
+        retail: retail.data.updateRetail.retailId,
+        accountMandates: newMandates,
+        modifiedBy: user.id,
+        modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+          .toISOString()
+          .split(".")[0],
+      },
+    })
+  
+    setAppState({
+      ...appState,
+      customer: customer.data.updateCustomer.customerId,
+    })
+
+    //create account for customer
+    if(customer.data.updateCustomer.customerId){
+      const account = await updateAccount({
+        variables: {
+          updateAccountId: appState.customerData?.accounts[0].id,
+          name: customer.data.updateCustomer.customerId,
+          accountOwner: customer.data.updateCustomer.customerId,
+          accountNumber: customer.data.updateCustomer.customerId,
+          description: `Retail Account for ${customer.data.updateCustomer.customerId}`,
+          accountType: appState.productInput.productTypes,
+          branchId: `BRANCH-${customer.data.updateCustomer.customerId}`,
+          normalBalance: "CREDIT",
+        },
+      })
+
+      //update customer with account
+      if(account){
+        const updatedCustomer = await updateCustomer({
+          variables: {
+            customerId: customer.data.updateCustomer.customerId,
+            accounts: [account.data.updateAccount.id],
+            modifiedBy: user.id,
+            modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+              .toISOString()
+              .split(".")[0],
+          },
+        })
+        toast({
+          title: "Customer Updated",
+          description: `Customer ${updatedCustomer.data.updateCustomer.customerId} has been updated successfully`,
+        })
+      }
+    }
+  }
+
+  const onSubmit = (data: BusinessRetailInput) => {
+    if(isEditMode){
+      updateData(data)
+    } else {
+      saveData(data)
+    }
+  }
 
   return (
     <div>
-      <form onSubmit={handleSubmit(saveData)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col px-2 pt-1 pb-4 my-4 border">
           <div className="flex items-center justify-between">
             <h3>ACCOUNT MANDATES</h3>
@@ -317,13 +484,13 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
           <Button type="submit">Save</Button>
           <Button
             type="button"
-            onClick={() => navigate("/customers/customer-wizard/products")}
+            onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/products`) : navigate("/customers/customer-wizard/products")}
           >
             Back
           </Button>
           <Button
             type="button"
-            onClick={() => navigate("/customers/customer-wizard/mandate-rules")}
+            onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/mandate-rules`) : navigate("/customers/customer-wizard/mandate-rules")}
           >
             Next
           </Button>

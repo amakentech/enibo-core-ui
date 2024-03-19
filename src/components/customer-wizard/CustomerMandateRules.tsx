@@ -15,9 +15,9 @@ import { MandateType } from "@/types/global";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { X } from "lucide-react";
 import { Input } from "../ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppState } from "@/store/state";
-import { CREATE_MANDATE_RULE } from "@/types/mutations";
+import { CREATE_MANDATE_RULE, UPDATE_CUSTOMER, UPDATE_MANDATE_RULE } from "@/types/mutations";
 
 const businessRetailSchema = z.object({
   signingRules: z.array(
@@ -54,6 +54,8 @@ const GET_MANDATE_TYPES = gql`
 interface CustomerMandateRulesProps {}
 
 const CustomerMandateRules: FC<CustomerMandateRulesProps> = () => {
+  const {customerId} = useParams();
+  const isEditMode = customerId ? true : false;
   const [mandateTypes, setMandateTypes] = useState<MandateType[]>([]);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const {appState, setAppState} = useAppState();
@@ -61,6 +63,7 @@ const CustomerMandateRules: FC<CustomerMandateRulesProps> = () => {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<BusinessRetailInput>({
     resolver: zodResolver(businessRetailSchema),
@@ -74,6 +77,23 @@ const CustomerMandateRules: FC<CustomerMandateRulesProps> = () => {
       maximumDailyLimit: 0,
     },
   ]);
+  
+  useEffect(() => {
+    if(isEditMode && appState.customerData){
+      const newMandateRules = appState.customerData.mandateRules.map((mandate) => {
+        return {
+          signingMandateType: mandate.mandateType,
+          signingRule: mandate.signingRule,
+          minimumPaymentAmount: mandate.minimumTransactionAmount,
+          maximumPaymentAmount: mandate.maximumTransactionAmount,
+          maximumDailyLimit: mandate.maximumDailyLimit
+        }
+      })
+      setValue("signingRules", newMandateRules)
+      
+    }
+  }, [appState, setValue, isEditMode]);
+  
   const { data: mandateData } = useQuery(GET_MANDATE_TYPES);
   useEffect(() => {
     if (mandateData && mandateData.mandateTypes) {
@@ -82,6 +102,8 @@ const CustomerMandateRules: FC<CustomerMandateRulesProps> = () => {
   }, [mandateData]);
   const navigate = useNavigate();
   const [createMandateRule] = useMutation(CREATE_MANDATE_RULE);
+  const [updateMandateRule] = useMutation(UPDATE_MANDATE_RULE);
+  const [updateCustomer] = useMutation(UPDATE_CUSTOMER);
   const saveData = async (data: BusinessRetailInput) => {
     console.log(data);
     const rules = await Promise.all(
@@ -103,15 +125,79 @@ const CustomerMandateRules: FC<CustomerMandateRulesProps> = () => {
         return response.data.createMandateRule
       })
     )
+    console.log(rules)
+    const newRules = rules.map((rule) => rule.mandateRuleId)
+    const response = await updateCustomer({
+      variables: {
+        customerId: appState.customer,
+        mandateRules: newRules,
+        modifiedBy: user.id,
+        modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+          .toISOString()
+          .split(".")[0],
+      }
+    })
+    console.log(response.data.updateCustomer)
     setAppState({
       ...appState,
       signingRules: rules
     })
     navigate("/customers")
   }
+
+  const updateData = async (data: BusinessRetailInput) => {
+    console.log(data);
+    const rules = await Promise.all(
+      data.signingRules.map(async (rule) => {
+        const response = await updateMandateRule({
+          variables:{
+            mandateRuleId: appState.customerData?.mandateRules[0].mandateRuleId,
+            customerId: appState.customerData?.customerId,
+            mandateType: rule.signingMandateType,
+            signingRule: rule.signingRule,
+            minimumTransactionAmount: rule.minimumPaymentAmount,
+            maximumTransactionAmount: rule.maximumPaymentAmount,
+            maximumDailyLimit: rule.maximumDailyLimit,
+            modifiedBy: user.id,
+              modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+                .toISOString()
+                .split(".")[0],
+          }
+        })
+        return response.data.updateMandateRule
+      })
+    )
+    console.log(rules)
+    const newRules = rules.map((rule) => rule.mandateRuleId)
+    const response = await updateCustomer({
+      variables: {
+        customerId: appState.customer,
+        mandateRules: newRules,
+        modifiedBy: user.id,
+        modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+          .toISOString()
+          .split(".")[0],
+      }
+    })
+    console.log(response.data.updateCustomer)
+    setAppState({
+      ...appState,
+      signingRules: rules
+    })
+    navigate("/customers")
+  }
+
+  const onSubmit = (data: BusinessRetailInput) => {
+    if(isEditMode){
+      updateData(data)
+    }else{
+      saveData(data)
+    }
+  }
+  
   return (
     <div>
-      <form onSubmit={handleSubmit(saveData)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col px-2 pt-1 pb-4 my-4 border">
           <div className="flex items-center justify-between">
             <h3>SIGNING MANDATE DETAILS</h3>
@@ -240,7 +326,7 @@ const CustomerMandateRules: FC<CustomerMandateRulesProps> = () => {
         <div className="flex justify-start gap-4">
           <Button>Save</Button>
           <Button
-            onClick={() => navigate("/customers/customer-wizard/mandates")}
+            onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/mandates`) : navigate("/customers/customer-wizard/mandates")}
           >
             Back
           </Button>

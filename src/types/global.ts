@@ -8,19 +8,22 @@ enum RetailType {
 }
 
 type AccountMandate = {
+  mandateId: string;
+  category: string;
   signatory: string; //reference to Signatory
   mandateType: string;
   signingRules: string;
 };
 
 type Retail = {
+  retailId: string;
   retailType: RetailType;
   designation: string;
   firstName: string;
   middleName: string;
   lastName: string;
-  individualKYC: string; //reference to IndividualKYC
-  productTypes: string[]; //reference to ProductType
+  individualKYC: KYCIndividual; //reference to IndividualKYC
+  productTypes: ProductType; //reference to ProductType
   accountCurrency: string;
   riskRating: string;
   accountMandates: AccountMandate[]; //reference to AccountMandate
@@ -29,7 +32,7 @@ type Retail = {
 type Business = {
   legalEntityName: string;
   businessKYC: string; //reference to BusinessKYC
-  productTypes: string[]; //reference to ProductType
+  productTypes: ProductType; //reference to ProductType
   accountCurrency: string;
   riskRating: string;
   directors: string[]; //reference to Director
@@ -37,16 +40,37 @@ type Business = {
   accountMandates: AccountMandate[]; //reference to AccountMandate
 };
 
+type MandateRule = {
+  mandateRuleId: string;
+  category: string;
+  mandateType: string;
+  signingRule: string;
+  minimumTransactionAmount: string;
+  maximumTransactionAmount: string;
+  maximumDailyLimit: string;
+}
+
+type Account = {
+  id: string;
+  name: string;
+  accountOwner: string;
+  accountNumber: string;
+  accountType: string;
+  description: string;
+  branchId: string;
+  normalBalance: string;
+}
+
 export type Customer = {
   customerId: string;
-  customerType: CustomerType;
+  customerType: string;
   retail?: Retail;
   business?: Business;
-  signingMandateRules: {
-    signingRules: string;
-    minimumPaymentAmount: number;
-    maximumPaymentAmount: number;
-  };
+  accountMandates: AccountMandate[];
+  accounts: Account[]
+  mandateRules: MandateRule[]; //reference to MandateRule
+  modifiedBy: string;
+  modifiedOn: string;
 };
 
 export type ProductType = {
