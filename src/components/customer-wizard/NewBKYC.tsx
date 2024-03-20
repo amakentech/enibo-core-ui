@@ -116,16 +116,14 @@ const NewBKYC: FC<NewBKYCProps> = ({listType}) => {
       kycType: response.data.createBusinessKYC.kycType,
       status: "Pending",
     }
-    if(listType === "business"){
+    if(listType === "accountOwners"){
       setAppState({
         ...appState,
-        businesses: [...appState.businesses, individualData]
+        legalEntityName: data.legalEntityName,
+        accountOwners: [...appState.accountOwners, individualData]
       })
-    } else if(listType === "retail") {
-      setAppState({
-        ...appState,
-        individuals: [...appState.individuals, individualData]
-      })
+    } else {
+      setOpen(false);
     }
     toast({
       title: "New KYC Business Created",

@@ -338,7 +338,7 @@ function App() {
           }
         />
         <Route
-          path="customers/kyc-types/individual-form"
+          path="customers/customer-kycs/individual-form"
           element={
             <MainLayout>
               <NewKYCIndividualForm />
@@ -346,7 +346,15 @@ function App() {
           }
         />
         <Route
-          path="customers/kyc-types/business-form"
+          path="customers/customer-kycs/individual-form/:IndividualKYCId"
+          element={
+            <MainLayout>
+              <NewKYCIndividualForm />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="customers/customer-kycs/business-form"
           element={
             <MainLayout>
               <NewKYCBusinessForm />
@@ -354,7 +362,7 @@ function App() {
           }
         />
         <Route
-          path="customers/kyc-types/business-form/:businessKYCId"
+          path="customers/customer-kycs/business-form/:businessKYCId"
           element={
             <MainLayout>
               <NewKYCBusinessForm />

@@ -26,15 +26,17 @@ interface AppState {
     country_code: string;
   }
   customerType: string;
+  legalEntityName: string | undefined;
   customer: string;
+  business: string;
   retail: string;
-  individuals: {
+  accountOwners: {
     kycId: string | undefined;
     createdBy: string | undefined;
     kycType: string | undefined;
     status: string | undefined;
   }[];
-  businesses: {
+  otherKYCs: {
     kycId: string | undefined;
     createdBy: string | undefined;
     kycType: string | undefined;
@@ -99,6 +101,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   // Use useState with the initial state
   const [appState, setAppState] = useState<AppState>({
     // Initialize your state properties here
+    legalEntityName: "",
+    business: "",
     productInput: {
       productTypes: "",
       accountCurrency: "",
@@ -123,8 +127,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     customerType: "",
     retail: "",
     customer: "",
-    individuals: [],
-    businesses: [],
+    accountOwners: [],
+    otherKYCs: [],
     user: {
       id: "",
       username: "",

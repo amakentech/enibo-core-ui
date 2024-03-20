@@ -15,6 +15,7 @@ import { ProductType } from "@/types/global";
 import { gql, useQuery } from "@apollo/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppState } from "@/store/state";
+import { toast } from "../ui/use-toast";
 
 const businessRetailSchema = z.object({
   productTypes: z.string().min(3, { message: "Product Types is required" }),
@@ -43,6 +44,7 @@ const Products: FC<ProductsProps> = () => {
   const {customerId} = useParams();
   const isEditMode = customerId ? true : false;
   const [ProductTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [saving, setSaving] = useState(false);
   const {appState, setAppState} = useAppState();
 
   const {
@@ -56,13 +58,14 @@ const Products: FC<ProductsProps> = () => {
   
   useEffect(() => {
     if(isEditMode && appState && appState.product && appState.product.productTypes && appState.product.accountCurrency && appState.product.riskRating) {
-      setValue("productTypes", appState.product.productTypes.productTypeId);
+      setValue("productTypes", appState.product.productTypes.productTypeId?.toString());
       setValue("accountCurrency", appState.product.accountCurrency);
       setValue("riskRating", appState.product.riskRating);
     }
   }, [isEditMode, setValue, appState]);
 
   const saveData = (data: BusinessRetailInput) => { 
+    setSaving(true);
     setAppState({
       ...appState,
       productInput: {
@@ -71,8 +74,20 @@ const Products: FC<ProductsProps> = () => {
         riskRating: data.riskRating,
       }
     })
+    setSaving(false);
   }
   const navigate = useNavigate();
+  const checkIfSaved = () => {
+    if(appState && appState.productInput && appState.productInput.productTypes && appState.productInput.accountCurrency && appState.productInput.riskRating) {
+      isEditMode ? navigate(`/customers/customer-wizard/${customerId}/mandates`) : navigate("/customers/customer-wizard/mandates")
+    } else {
+      toast({
+        title: "Data Not Saved",
+        description: "Please save data before proceeding",
+        variant: "destructive",
+      });
+    }
+  }
   const { data } = useQuery(GET_PRODUCT_TYPES);
   useEffect(() => {
     if (data && data.productTypes) {
@@ -93,16 +108,16 @@ const Products: FC<ProductsProps> = () => {
                 control={control}
                 name="productTypes"
                 render={({ field: { onChange, value } }) => (
-                  <Select onValueChange={onChange} value={value}>
+                  <Select onValueChange={onChange} value={value} defaultValue={value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Product Type" />
                     </SelectTrigger>
                     <SelectContent>
                       {/* Map over productTypes state to render select options */}
-                      {ProductTypes.map((type) => (
+                      {ProductTypes && ProductTypes.map((type) => (
                         <SelectItem
                           key={type.productTypeId}
-                          value={type.productTypeId}
+                          value={type.productTypeId.toString()}
                         >
                           {type.productTypeName}
                         </SelectItem>
@@ -168,7 +183,9 @@ const Products: FC<ProductsProps> = () => {
           </div>
         </div>
         <div className="flex justify-start gap-2 mt-4">
-          <Button type="submit">Save</Button>
+          <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Save"}
+          </Button>
           <Button
             type="button"
             onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}`) : navigate("/customers/customer-wizard")}
@@ -177,7 +194,7 @@ const Products: FC<ProductsProps> = () => {
           </Button>
           <Button 
           type="button"
-          onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/mandates`) : navigate("/customers/customer-wizard/mandates")}
+          onClick={() => checkIfSaved()}
           >Next</Button>
         </div>
       </form>

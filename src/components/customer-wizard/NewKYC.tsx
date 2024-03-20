@@ -107,15 +107,15 @@ const NewKYC: FC<NewKYCProps> = ({listType}) => {
       kycType: response.data.createIndividualKYC.kycType,
       status: "Pending",
     }
-    if(listType === "business"){
+    if(listType === "accountOwners"){
       setAppState({
         ...appState,
-        businesses: [...appState.businesses, individualData]
+        accountOwners: [...appState.accountOwners, individualData]
       })
-    } else if(listType === "retail") {
+    } else if(listType === "otherKYCs") {
       setAppState({
         ...appState,
-        individuals: [...appState.individuals, individualData]
+        otherKYCs: [...appState.otherKYCs, individualData]
       })
     }
     

@@ -32,7 +32,7 @@ const CustomerKYCS: FC<CustomerKYCSProps> = () => {
 
   //void handle delete handle copy and handle edit
   const handleIndividualEdit = (selectedRows: Row<KYCIndividual>[]) => {
-    navigate(`/customers/kyc-types/individual-form/${selectedRows[0].original.IndividualKYCId}`);
+    navigate(`/customers/customer-kycs/individual-form/${selectedRows[0].original.IndividualKYCId}`);
   };
 
   const handleIndividualDelete = (selectedRows: Row<KYCIndividual>[]) => {
@@ -41,11 +41,11 @@ const CustomerKYCS: FC<CustomerKYCSProps> = () => {
 
   const handleIndividualCopy = (selectedRows: Row<KYCIndividual>[]) => {
     localStorage.setItem("individualKyc", JSON.stringify(selectedRows[0].original));
-    navigate("/customers/kyc-types/individual-form");
+    navigate("/customers/customer-kycs/individual-form");
   };
 
   const handleBusinessEdit = (selectedRows: Row<KYCBusiness>[]) => {
-    navigate(`/customers/kyc-types/business-form/${selectedRows[0].original.businessKYCId}`);
+    navigate(`/customers/customer-kycs/business-form/${selectedRows[0].original.businessKYCId}`);
   };
 
   const handleBusinessDelete = (selectedRows: Row<KYCBusiness>[]) => {
@@ -54,7 +54,7 @@ const CustomerKYCS: FC<CustomerKYCSProps> = () => {
 
   const handleBusinessCopy = (selectedRows: Row<KYCBusiness>[]) => {
     localStorage.setItem("businessKyc", JSON.stringify(selectedRows[0].original));
-    navigate("/customers/kyc-types/business-form");
+    navigate("/customers/customer-kycs/business-form");
   };
 
   return (
@@ -123,7 +123,7 @@ const CustomerKYCS: FC<CustomerKYCSProps> = () => {
                 <Button
                   size="sm"
                   className="bg-[#36459C] text-white py-5 px-8"
-                  onClick={() => navigate("/customers/kyc-types/individual-form")}
+                  onClick={() => navigate("/customers/customer-kycs/individual-form")}
                 >
                   <FaPlus className="mr-1 text-white" /> Add
                 </Button>
@@ -139,7 +139,7 @@ const CustomerKYCS: FC<CustomerKYCSProps> = () => {
                 <Button
                   size="sm"
                   className="bg-[#36459C] text-white py-5 px-8"
-                  onClick={() => navigate("/customers/kyc-types/business-form")}
+                  onClick={() => navigate("/customers/customer-kycs/business-form")}
                 >
                   <FaPlus className="mr-1 text-white" /> Add
                 </Button>
