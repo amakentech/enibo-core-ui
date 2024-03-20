@@ -21,6 +21,9 @@ import { UPDATE_FEE_TYPE_MUTATION } from "./fee-type-list/mutation";
 import queryFeeTypesList from "./fee-type-list/query";
 import { z } from "zod";
 import queryTransactionTypesList from "./transaction-type-list/query";
+import RiAddLine from "remixicon-react/AddLineIcon";
+import { X } from "lucide-react";
+
 
 const feeTypeSchema = z.object({
   // feeTypeId: z.string().min(3, { message: "Fee id is required" }),
@@ -32,9 +35,10 @@ const feeTypeSchema = z.object({
   paymentFrequency: z
     .string()
     .min(3, { message: "Payment Frequency is required" }),
-  effectiveDate: z.string().min(3, { message: "Effective Date is required" }),
+    
+  effectiveDate: z.string(),
   // fixedRate: z.string().min(3, { message: "Fixed Rate is required" }),
-  fixedRate: z.coerce.number().min(0, { message: "Fixed Rate is required" }),
+  fixedRate: z.coerce.number(),
   modifiedBy: z.string().min(3, { message: "Modified By is required" }),
   modifiedOn: z.string().min(3, { message: "Modified On is required" }),
 });
@@ -279,6 +283,13 @@ const NewFeeTypesForm: FC<NewFeeTypesFormProps> = () => {
     }
   }, [data, queryLoading, queryError]);
 
+  const [feeDetails, setFeeDetails] = useState([
+    {
+      fixedRate: 0,
+      effectiveDate: "",
+    },
+  ]);
+
   return (
     <section>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -375,31 +386,71 @@ const NewFeeTypesForm: FC<NewFeeTypesFormProps> = () => {
               </span>
             )}
           </div>
-          <div>
-            <Label htmlFor="effectiveDate">Effective Date</Label>
-            <Input
-              id="effectiveDate"
-              type="date"
-              placeholder="Effective Date"
-              {...register("effectiveDate")}
-            />
-            {errors.effectiveDate && (
-              <span className="text-red-500">
-                {errors.effectiveDate.message}
-              </span>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="fixedRate">Fixed Rate (%)</Label>
-            <Input
-              id="fixedRate"
-              type="number"
-              placeholder="Fixed Rate"
-              {...register("fixedRate")}
-            />
-            {errors.fixedRate && (
-              <span className="text-red-500">{errors.fixedRate.message}</span>
-            )}
+          <div className="flex flex-col w-full gap-2">
+            <div className="flex justify-end -my-4">
+              <Button
+                variant="link"
+                onClick={() =>
+                  setFeeDetails((prev) => [
+                    ...prev,
+                    { fixedRate: 0, effectiveDate: "" },
+                  ])
+                }
+              >
+                <RiAddLine size={10} />
+                Add New
+              </Button>
+            </div>
+
+            {feeDetails.map((_fee, index) => (
+  <div key={index} className="flex w-full gap-2">
+    <div className="flex w-full">
+      <div className="w-full pr-8">
+        <Label>Fee Amount</Label>
+        <Input
+          type="number"
+          placeholder="Fee Amount"
+          {...register(`fixedRate`)}
+        />
+        {errors.fixedRate && (
+          <span className="text-sm text-red-500">
+            {errors.fixedRate.message}
+          </span>
+        )}
+      </div>
+      <div className="w-full">
+        <Label>Effective Date</Label>
+        <Input
+          type="date"
+          placeholder="Effective Date"
+          {...register(`effectiveDate`)}
+        />
+        {errors.effectiveDate && (
+          <span className="text-sm text-red-500">
+            {errors.effectiveDate.message}
+          </span>
+        )}
+      </div>
+    </div>
+    {index !== 0 && ( // Conditionally render X button for all records except the first one
+      <div className="w-[5%] flex justify-center items-end">
+        <Button
+          size="icon"
+          className=""
+          onClick={() => {
+            setFeeDetails((prev) => {
+              const newFeeDetails = [...prev];
+              newFeeDetails.splice(index, 1);
+              return newFeeDetails;
+            });
+          }}
+        >
+          <X className="w-4 h-4 text-red-300" />
+        </Button>
+      </div>
+    )}
+  </div>
+))}
           </div>
           <div className="hidden">
             <Label htmlFor="modifiedBy" className="text-[#36459C] text-base">
