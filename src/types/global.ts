@@ -30,13 +30,13 @@ type Retail = {
 };
 
 type Business = {
+  businessId: string;
   legalEntityName: string;
-  businessKYC: string; //reference to BusinessKYC
+  businessKYC: KYCBusiness; //reference to BusinessKYC
   productTypes: ProductType; //reference to ProductType
   accountCurrency: string;
   riskRating: string;
-  directors: string[]; //reference to Director
-  directorsKYC: string[]; //reference to DirectorKYC
+  directorsKYC: KYCIndividual; //reference to DirectorKYC
   accountMandates: AccountMandate[]; //reference to AccountMandate
 };
 

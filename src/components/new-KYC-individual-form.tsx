@@ -13,11 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@apollo/client";
-import { CREATE_INDIVIDUAL_KYC } from "@/types/mutations";
+import {
+  CREATE_INDIVIDUAL_KYC,
+  UPDATE_INDIVIDUAL_KYC,
+} from "@/types/mutations";
 import queryKycTypesList from "./kyc-type-list/query";
 import { KYCType } from "@/types/global";
+import { queryIndividualKYC } from "@/types/queries";
 
 const newKYCIndividualSchema = z.object({
   kycType: z.string().min(3, { message: "KYC Type is required" }),
@@ -49,18 +53,72 @@ type NewKYCIndividualInput = z.infer<typeof newKYCIndividualSchema>;
 interface NewKYCIndividualFormProps {}
 
 const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
+  const { IndividualKYCId } = useParams();
+  const isEditMode = IndividualKYCId ? true : false;
+  console.log(isEditMode);
+  const storedIndividualKYC = JSON.parse(
+    localStorage.getItem("individualKyc") || "{}"
+  );
+  const isCopyMode = storedIndividualKYC ? true : false;
   const { toast } = useToast();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const [createIndividualKyc] = useMutation(CREATE_INDIVIDUAL_KYC);
+  const navigate = useNavigate();
+  const [updateIndividualKyc] = useMutation(UPDATE_INDIVIDUAL_KYC);
   const [KYCTypes, setKycsTypes] = useState<KYCType[]>([]);
+
+  const { data: individualKYCData } = useQuery(queryIndividualKYC, {
+    variables: {
+      individualKycId: IndividualKYCId,
+    },
+  });
+  
+  const defaultFormValues = {
+    kycType: "",
+    designation: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    phoneNumber: "",
+    emailAddress: "",
+    postalAddress: "",
+    physicalAddress: "",
+    country: "",
+    taxNumber: "",
+    idType: "",
+    idNumber: "",
+    sex: "",
+    nationality: "",
+    riskRating: "",
+    attachDocumentsField: "",
+    signature: "",
+  };
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<NewKYCIndividualInput>({
     resolver: zodResolver(newKYCIndividualSchema),
+    defaultValues: defaultFormValues,
   });
-  const onSubmit = (data: NewKYCIndividualInput) => {
+
+  const {
+    data,
+    loading: queryLoading,
+    error: queryError,
+  } = useQuery(queryKycTypesList);
+
+  useEffect(() => {
+    if (data) {
+      setKycsTypes(data.kycTypes);
+    }
+  }, [data, queryLoading, queryError]);
+
+
+
+  const handleCreate = (data: NewKYCIndividualInput) => {
     const formInput = {
       kycType: data.kycType, //TODO: get kyc type id from context
       designation: data.designation,
@@ -80,7 +138,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
       riskRating: data.riskRating,
       attachDocumentsField: data.attachDocumentsField,
       signature: data.signature,
-      modifiedBy: "e170f3b7-c9bc-421a-9c9f-a15fd17e6f3d", //TODO: get user id from context
+      modifiedBy: user.id, //TODO: get user id from context
       modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
         .toISOString()
         .split(".")[0],
@@ -92,18 +150,146 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
       title: "New KYC Individual Created",
       description: "New KYC Individual has been created successfully",
     });
+    localStorage.removeItem("individualKyc");
+    navigate("/customers/customer-kycs", { replace: true });
   };
-  const {
-    data,
-    loading: queryLoading,
-    error: queryError,
-  } = useQuery(queryKycTypesList);
+
+  const handleEdit = (data: NewKYCIndividualInput) => {
+    console.log(data)
+    const formInput = {
+      individualKycId: IndividualKYCId,
+      kycType: data.kycType, //TODO: get kyc type id from context
+      designation: data.designation,
+      firstName: data.firstName,
+      middleName: data.middleName,
+      lastName: data.lastName,
+      phoneNumber: data.phoneNumber,
+      emailAddress: data.emailAddress,
+      postalAddress: data.postalAddress,
+      physicalAddress: data.physicalAddress,
+      country: data.country,
+      taxNumber: data.taxNumber,
+      idType: data.idType,
+      idNumber: data.idNumber,
+      sex: data.sex,
+      nationality: data.nationality,
+      riskRating: data.riskRating,
+      attachDocumentsField: data.attachDocumentsField,
+      signature: data.signature,
+      modifiedBy: user.id, //TODO: get user id from context
+      modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
+        .toISOString()
+        .split(".")[0],
+    };
+
+    updateIndividualKyc({ variables: formInput });
+
+    toast({
+      title: "KYC Individual Updated",
+      description: "KYC Individual has been updated successfully",
+    });
+
+    navigate("/customers/customer-kycs", { replace: true });
+  };
+
+  const onSubmit = (data: NewKYCIndividualInput) => {
+    if (isEditMode) {
+      handleEdit(data);
+    } else {
+      handleCreate(data);
+    }
+  };
 
   useEffect(() => {
-    if (data) {
-      setKycsTypes(data.kycTypes);
+    if (isEditMode && individualKYCData) {
+      console.log(individualKYCData.individualKYC);
+      const {
+        kycType,
+        designation,
+        firstName,
+        middleName,
+        lastName,
+        phoneNumber,
+        emailAddress,
+        postalAddress,
+        physicalAddress,
+        country,
+        taxNumber,
+        idType,
+        idNumber,
+        sex,
+        nationality,
+        riskRating,
+        attachDocumentsField,
+        signature,
+      } = individualKYCData.individualKYC;
+      setValue("kycType", kycType);
+      setValue("designation", designation);
+      setValue("firstName", firstName);
+      setValue("middleName", middleName);
+      setValue("lastName", lastName);
+      setValue("phoneNumber", phoneNumber);
+      setValue("emailAddress", emailAddress);
+      setValue("postalAddress", postalAddress);
+      setValue("physicalAddress", physicalAddress);
+      setValue("country", country);
+      setValue("taxNumber", taxNumber);
+      setValue("idType", idType);
+      setValue("idNumber", idNumber);
+      setValue("sex", sex);
+      setValue("nationality", nationality);
+      setValue("riskRating", riskRating);
+      setValue("attachDocumentsField", attachDocumentsField);
+      setValue("signature", signature);
     }
-  }, [data, queryLoading, queryError]);
+
+    if (isCopyMode) {
+      const {
+        kycType,
+        designation,
+        firstName,
+        middleName,
+        lastName,
+        phoneNumber,
+        emailAddress,
+        postalAddress,
+        physicalAddress,
+        country,
+        taxNumber,
+        idType,
+        idNumber,
+        sex,
+        nationality,
+        riskRating,
+        attachDocumentsField,
+        signature,
+      } = storedIndividualKYC;
+      setValue("kycType", kycType);
+      setValue("designation", designation);
+      setValue("firstName", firstName);
+      setValue("middleName", middleName);
+      setValue("lastName", lastName);
+      setValue("phoneNumber", phoneNumber);
+      setValue("emailAddress", emailAddress);
+      setValue("postalAddress", postalAddress);
+      setValue("physicalAddress", physicalAddress);
+      setValue("country", country);
+      setValue("taxNumber", taxNumber);
+      setValue("idType", idType);
+      setValue("idNumber", idNumber);
+      setValue("sex", sex);
+      setValue("nationality", nationality);
+      setValue("riskRating", riskRating);
+      setValue("attachDocumentsField", attachDocumentsField);
+      setValue("signature", signature);
+    }
+  }, [
+    individualKYCData,
+    isEditMode,
+    isCopyMode,
+    storedIndividualKYC,
+    setValue,
+  ]);
 
   return (
     <section>
@@ -133,14 +319,14 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
           </div>
         </div>
       </div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col">
+      <form onSubmit={handleSubmit(onSubmit)} className="px-4">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 border">
             <div className="p-4">
-             
-              </div>
-              <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
-                <div>
+              <h3>PERSONAL DETAILS</h3>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
+              <div>
                 <Label htmlFor="kycType">KYC TYPE</Label>
                 <Controller
                   control={control}
@@ -164,22 +350,14 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                   )}
                 />
               </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-4 border-l border-r">
-            <div className="p-4">
-              <h3>PERSONAL DETAILS</h3>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
               <div>
-                
                 <Label htmlFor="designation">
                   Designation e.g. Mr, Mrs, Dr, Rev, etc
                 </Label>
                 <Input
                   id="designation"
                   type="text"
-                  {...register("designation", { required: true })}
+                  {...register("designation")}
                   className="mt-1"
                 />
                 {errors.designation && (
@@ -192,7 +370,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   type="text"
-                  {...register("firstName", { required: true })}
+                  {...register("firstName")}
                   className="mt-1"
                 />
                 {errors.firstName && (
@@ -204,7 +382,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="middleName"
                   type="text"
-                  {...register("middleName", { required: true })}
+                  {...register("middleName")}
                   className="mt-1"
                 />
                 {errors.middleName && (
@@ -219,7 +397,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="lastName"
                   type="text"
-                  {...register("lastName", { required: true })}
+                  {...register("lastName")}
                   className="mt-1"
                 />
                 {errors.lastName && (
@@ -231,7 +409,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="emailAddress"
                   type="text"
-                  {...register("emailAddress", { required: true })}
+                  {...register("emailAddress")}
                   className="mt-1"
                 />
                 {errors.emailAddress && (
@@ -245,7 +423,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="phoneNumber"
                   type="text"
-                  {...register("phoneNumber", { required: true })}
+                  {...register("phoneNumber")}
                   className="mt-1"
                 />
                 {errors.phoneNumber && (
@@ -256,7 +434,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-4 border-l border-r">
+          <div className="flex flex-col gap-4 border">
             <div className="p-4">
               <h3>LOCATION DETAILS</h3>
             </div>
@@ -266,7 +444,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="postalAddress"
                   type="text"
-                  {...register("postalAddress", { required: true })}
+                  {...register("postalAddress")}
                   className="mt-1"
                 />
                 {errors.postalAddress && (
@@ -280,7 +458,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="physicalAddress"
                   type="text"
-                  {...register("physicalAddress", { required: true })}
+                  {...register("physicalAddress")}
                   className="mt-1"
                 />
                 {errors.physicalAddress && (
@@ -294,7 +472,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="country"
                   type="text"
-                  {...register("country", { required: true })}
+                  {...register("country")}
                   className="mt-1"
                 />
                 {errors.country && (
@@ -303,7 +481,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-4 border border-b-0">
+          <div className="flex flex-col gap-4 border">
             <div className="p-4">
               <h3>IDENTIFICATION DETAILS</h3>
             </div>
@@ -337,7 +515,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="idNumber"
                   type="text"
-                  {...register("idNumber", { required: true })}
+                  {...register("idNumber")}
                   className="mt-1"
                 />
                 {errors.idNumber && (
@@ -349,7 +527,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="taxNumber"
                   type="text"
-                  {...register("taxNumber", { required: true })}
+                  {...register("taxNumber")}
                   className="mt-1"
                 />
                 {errors.taxNumber && (
@@ -382,7 +560,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="nationality"
                   type="text"
-                  {...register("nationality", { required: true })}
+                  {...register("nationality")}
                   className="mt-1"
                 />
                 {errors.nationality && (
@@ -396,7 +574,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="riskRating"
                   type="text"
-                  {...register("riskRating", { required: true })}
+                  {...register("riskRating")}
                   className="mt-1"
                 />
                 {errors.riskRating && (
@@ -418,7 +596,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="attachDocumentsField"
                   type="text"
-                  {...register("attachDocumentsField", { required: true })}
+                  {...register("attachDocumentsField")}
                   className="mt-1"
                 />
                 {errors.attachDocumentsField && (
@@ -432,7 +610,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
                 <Input
                   id="signature"
                   type="text"
-                  {...register("signature", { required: true })}
+                  {...register("signature")}
                   className="mt-1"
                 />
                 {errors.signature && (
@@ -442,9 +620,15 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-start mt-4 mb-6">
           <Button type="submit">Submit</Button>
-          <Button className="ml-2">Cancel</Button>
+          <Button
+            className="ml-2"
+            type="button"
+            onClick={() => navigate("/customers/customer-kycs")}
+          >
+            Cancel
+          </Button>
         </div>
       </form>
     </section>

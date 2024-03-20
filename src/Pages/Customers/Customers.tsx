@@ -43,24 +43,56 @@ const Customers: FC<CustomersProps> = () => {
   }, [data, queryLoading, queryError]);
   const handleEdit = (selectedRows: Row<Customer>[]) => {
     console.log("Edit", selectedRows);
-    const individualData = {
-      kycId: selectedRows[0].original.retail?.individualKYC?.IndividualKYCId,
-      createdBy: "John Doe",
-      kycType: selectedRows[0].original.retail?.individualKYC?.kycType,
-      status: "Active",
+    if(selectedRows[0].original.customerType === "retail") {
+      const individualData = {
+        kycId: selectedRows[0].original.retail?.individualKYC?.IndividualKYCId,
+        createdBy: "John Doe",
+        kycType: selectedRows[0].original.retail?.individualKYC?.kycType,
+        status: "Active",
+      }
+      const productData = {
+        productTypes: selectedRows[0].original.retail?.productTypes,
+        accountCurrency: selectedRows[0].original.retail?.accountCurrency,
+        riskRating: selectedRows[0].original.retail?.riskRating,
+      }
+      setAppState({
+        ...appState,
+        customerType: selectedRows[0].original.customerType,
+        accountOwners: [...appState.accountOwners, individualData],
+        product: productData,
+        customerData: selectedRows[0].original,
+      })
+    } else {
+      const businessData = {
+        kycId: selectedRows[0].original.business?.businessKYC?.businessKYCId,
+        createdBy: "John Doe",
+        kycType: selectedRows[0].original.business?.businessKYC?.kycType,
+        status: "Active",
+      }
+
+      const directorsData = {
+        kycId: selectedRows[0].original.business?.directorsKYC?.IndividualKYCId,
+        createdBy: "John Doe",
+        kycType: selectedRows[0].original.business?.directorsKYC?.kycType,
+        status: "Active",
+      }
+
+      const productData = {
+        productTypes: selectedRows[0].original.business?.productTypes,
+        accountCurrency: selectedRows[0].original.business?.accountCurrency,
+        riskRating: selectedRows[0].original.business?.riskRating,
+      }
+      const businessName = selectedRows[0].original.business && selectedRows[0].original.business.legalEntityName;
+      setAppState({
+        ...appState,
+        legalEntityName: businessName,
+        customerType: selectedRows[0].original.customerType,
+        accountOwners: [...appState.accountOwners, businessData],
+        otherKYCs: [...appState.otherKYCs, directorsData],
+        product: productData,
+        customerData: selectedRows[0].original,
+      })
     }
-    const productData = {
-      productTypes: selectedRows[0].original.retail?.productTypes,
-      accountCurrency: selectedRows[0].original.retail?.accountCurrency,
-      riskRating: selectedRows[0].original.retail?.riskRating,
-    }
-    setAppState({
-      ...appState,
-      customerType: selectedRows[0].original.customerType,
-      individuals: [...appState.individuals, individualData],
-      product: productData,
-      customerData: selectedRows[0].original,
-    })
     navigate(`/customers/customer-wizard/${selectedRows[0].original.customerId}`);
   };
   

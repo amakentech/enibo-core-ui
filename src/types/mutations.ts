@@ -148,6 +148,62 @@ export const CREATE_INDIVIDUAL_KYC = gql`
   }
 `;
 
+export const UPDATE_INDIVIDUAL_KYC = gql`
+mutation UpdateIndividualKYC($individualKycId: String!, $kycType: String!, $designation: String!, $firstName: String!, $middleName: String!, $lastName: String!, $phoneNumber: String!, $emailAddress: String!, $postalAddress: String!, $physicalAddress: String!, $country: String!, $taxNumber: String!, $idType: String!, $idNumber: String!, $sex: String!, $nationality: String!, $riskRating: String!, $attachDocumentsField: String!, $signature: String!, $modifiedBy: String!, $modifiedOn: String!) {
+  updateIndividualKYC(IndividualKYCId: $individualKycId, kycType: $kycType, designation: $designation, firstName: $firstName, middleName: $middleName, lastName: $lastName, phoneNumber: $phoneNumber, emailAddress: $emailAddress, postalAddress: $postalAddress, physicalAddress: $physicalAddress, country: $country, taxNumber: $taxNumber, idType: $idType, idNumber: $idNumber, sex: $sex, nationality: $nationality, riskRating: $riskRating, attachDocumentsField: $attachDocumentsField, signature: $signature, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    IndividualKYCId
+    kycType
+    designation
+    firstName
+    middleName
+    lastName
+    phoneNumber
+    emailAddress
+    postalAddress
+    physicalAddress
+    country
+    taxNumber
+    idType
+    idNumber
+    sex
+    nationality
+    riskRating
+    attachDocumentsField
+    signature
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
+export const DELETE_INDIVIDUAL_KYC = gql`
+mutation DeleteIndividualKYC($individualKycId: String!) {
+  deleteIndividualKYC(IndividualKYCId: $individualKycId) {
+    IndividualKYCId
+    kycType
+    designation
+    firstName
+    middleName
+    lastName
+    phoneNumber
+    emailAddress
+    postalAddress
+    physicalAddress
+    country
+    taxNumber
+    idType
+    idNumber
+    sex
+    nationality
+    riskRating
+    attachDocumentsField
+    signature
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
 export const CREATE_BUSINESS_KYC = gql`
   mutation CreateBusinessKYC($kycType: String!, $legalEntityName: String!, $legalStatus: String!, $dateOfIncorporation: String!, $registrationNumber: String!, $natureOfBusiness: String!, $entityNationality: String!, $entityPinNumber: String!, $entityTaxNumber: String!, $telephoneNumber: String!, $emailAddress: String!, $postalAddress: String!, $physicalAddress: String!, $riskRating: String!, $attachDocumentsField: String!, $modifiedBy: String!, $modifiedOn: String!) {
   createBusinessKYC(kycType: $kycType, legalEntityName: $legalEntityName, legalStatus: $legalStatus, dateOfIncorporation: $dateOfIncorporation, registrationNumber: $registrationNumber, natureOfBusiness: $natureOfBusiness, entityNationality: $entityNationality, entityPINNumber: $entityPinNumber, entityTaxNumber: $entityTaxNumber, telephoneNumber: $telephoneNumber, emailAddress: $emailAddress, postalAddress: $postalAddress, physicalAddress: $physicalAddress, riskRating: $riskRating, attachDocumentsField: $attachDocumentsField, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
@@ -172,6 +228,57 @@ export const CREATE_BUSINESS_KYC = gql`
   }
 }
 `;
+
+export const UPDATE_BUSINESS_KYC = gql`
+mutation UpdateBusinessKYC($businessKycId: String!, $kycType: String!, $legalEntityName: String!, $legalStatus: String!, $dateOfIncorporation: String!, $registrationNumber: String!, $natureOfBusiness: String!, $entityNationality: String!, $entityPinNumber: String!, $entityTaxNumber: String!, $telephoneNumber: String!, $emailAddress: String!, $postalAddress: String!, $physicalAddress: String!, $riskRating: String!, $attachDocumentsField: String!, $modifiedBy: String!, $modifiedOn: String!) {
+  updateBusinessKYC(businessKYCId: $businessKycId, kycType: $kycType, legalEntityName: $legalEntityName, legalStatus: $legalStatus, dateOfIncorporation: $dateOfIncorporation, registrationNumber: $registrationNumber, natureOfBusiness: $natureOfBusiness, entityNationality: $entityNationality, entityPINNumber: $entityPinNumber, entityTaxNumber: $entityTaxNumber, telephoneNumber: $telephoneNumber, emailAddress: $emailAddress, postalAddress: $postalAddress, physicalAddress: $physicalAddress, riskRating: $riskRating, attachDocumentsField: $attachDocumentsField, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    businessKYCId
+    kycType
+    legalEntityName
+    legalStatus
+    dateOfIncorporation
+    registrationNumber
+    natureOfBusiness
+    entityNationality
+    entityPinNumber
+    entityTaxNumber
+    telephoneNumber
+    emailAddress
+    postalAddress
+    physicalAddress
+    riskRating
+    attachDocumentsField
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
+export const DELETE_BUSINESS_KYC = gql`
+mutation DeleteBusinessKYC($businessKycId: String!) {
+  deleteBusinessKYC(businessKYCId: $businessKycId) {
+    businessKYCId
+    kycType
+    legalEntityName
+    legalStatus
+    dateOfIncorporation
+    registrationNumber
+    natureOfBusiness
+    entityNationality
+    entityPinNumber
+    entityTaxNumber
+    telephoneNumber
+    emailAddress
+    postalAddress
+    physicalAddress
+    riskRating
+    attachDocumentsField
+    modifiedBy
+    modifiedOn
+  }
+}
+`
+
 export const CREATE_LEDGER_ACCOUNT_CATEGORIES = gql`
   mutation CreateAccountCategory(
     $ledgerCategory: String!
@@ -416,6 +523,188 @@ mutation UpdateRetail($retailId: String!, $retailType: String!, $individualKyc: 
   }
 }
 `
+export const CREATE_BUSINESS = gql`
+mutation CreateBusiness($legalEntityName: String!, $businessKyc: String!, $productTypes: String!, $accountCurrency: String!, $riskRating: String!, $directorsKyc: String!, $accountMandates: [String!]!, $modifiedBy: String!, $modifiedOn: String!) {
+  createBusiness(legalEntityName: $legalEntityName, businessKYC: $businessKyc, productTypes: $productTypes, accountCurrency: $accountCurrency, riskRating: $riskRating, directorsKYC: $directorsKyc, accountMandates: $accountMandates, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    businessId
+    legalEntityName
+    accountCurrency
+    riskRating
+    accountMandates
+    modifiedBy
+    modifiedOn
+    businessKYC {
+      businessKYCId
+      kycType
+      legalEntityName
+      legalStatus
+      dateOfIncorporation
+      registrationNumber
+      natureOfBusiness
+      entityNationality
+      entityPinNumber
+      entityTaxNumber
+      telephoneNumber
+      emailAddress
+      postalAddress
+      physicalAddress
+      riskRating
+      attachDocumentsField
+      modifiedBy
+      modifiedOn
+    }
+    directorsKYC {
+      IndividualKYCId
+      kycType
+      designation
+      firstName
+      middleName
+      lastName
+      phoneNumber
+      emailAddress
+      postalAddress
+      physicalAddress
+      country
+      taxNumber
+      idType
+      idNumber
+      sex
+      nationality
+      riskRating
+      attachDocumentsField
+      signature
+      modifiedBy
+      modifiedOn
+    }
+    productTypes {
+      productTypeId
+      productTypeName
+      description
+      active
+      interestBearing
+      fixedInterestRate
+      effectiveDate
+      fees
+      feeTypes {
+        feeTypeId
+        feeTypeName
+        description
+        transactionTypes {
+          transactionTypeId
+          transactionTypeName
+          transactionTypeCode
+          description
+          currency
+          modifiedBy
+          modifiedOn
+        }
+        paymentFrequency
+        effectiveDate
+        fixedRate
+        modifiedBy
+        modifiedOn
+      }
+      riskRating
+      prefix
+      numberSchema
+      startingValue
+      modifiedBy
+      modifiedOn
+    }
+  }
+}
+`
+export const UPDATE_BUSINESS = gql`
+mutation UpdateBusiness($businessId: String!, $legalEntityName: String!, $businessKyc: String!, $productTypes: String!, $accountCurrency: String!, $riskRating: String!, $directorsKyc: String!, $accountMandates: [String!]!, $modifiedBy: String!, $modifiedOn: String!) {
+  updateBusiness(businessId: $businessId, legalEntityName: $legalEntityName, businessKYC: $businessKyc, productTypes: $productTypes, accountCurrency: $accountCurrency, riskRating: $riskRating, directorsKYC: $directorsKyc, accountMandates: $accountMandates, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
+    businessId
+    legalEntityName
+    accountCurrency
+    riskRating
+    accountMandates
+    modifiedBy
+    modifiedOn
+    businessKYC {
+      businessKYCId
+      kycType
+      legalEntityName
+      legalStatus
+      dateOfIncorporation
+      registrationNumber
+      natureOfBusiness
+      entityNationality
+      entityPinNumber
+      entityTaxNumber
+      telephoneNumber
+      emailAddress
+      postalAddress
+      physicalAddress
+      riskRating
+      attachDocumentsField
+      modifiedBy
+      modifiedOn
+    }
+    directorsKYC {
+      IndividualKYCId
+      kycType
+      designation
+      firstName
+      middleName
+      lastName
+      phoneNumber
+      emailAddress
+      postalAddress
+      physicalAddress
+      country
+      taxNumber
+      idType
+      idNumber
+      sex
+      nationality
+      riskRating
+      attachDocumentsField
+      signature
+      modifiedBy
+      modifiedOn
+    }
+    productTypes {
+      productTypeId
+      productTypeName
+      description
+      active
+      interestBearing
+      fixedInterestRate
+      effectiveDate
+      fees
+      feeTypes {
+        feeTypeId
+        feeTypeName
+        description
+        transactionTypes {
+          transactionTypeId
+          transactionTypeName
+          transactionTypeCode
+          description
+          currency
+          modifiedBy
+          modifiedOn
+        }
+        paymentFrequency
+        effectiveDate
+        fixedRate
+        modifiedBy
+        modifiedOn
+      }
+      riskRating
+      prefix
+      numberSchema
+      startingValue
+      modifiedBy
+      modifiedOn
+    }
+  }
+}
+`
 
 export const CREATE_CUSTOMER = gql`
 mutation CreateCustomer($customerType: String, $retail: String, $business: String, $accounts: [String], $accountMandates: [String], $mandateRules: [String], $modifiedBy: String, $modifiedOn: String) {
@@ -492,11 +781,86 @@ mutation CreateCustomer($customerType: String, $retail: String, $business: Strin
     business {
       businessId
       legalEntityName
-      businessKYC
-      productTypes
+      businessKYC {
+        businessKYCId
+        kycType
+        legalEntityName
+        legalStatus
+        dateOfIncorporation
+        registrationNumber
+        natureOfBusiness
+        entityNationality
+        entityPinNumber
+        entityTaxNumber
+        telephoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        riskRating
+        attachDocumentsField
+        modifiedBy
+        modifiedOn
+      }
+      productTypes {
+        productTypeId
+        productTypeName
+        description
+        active
+        interestBearing
+        fixedInterestRate
+        effectiveDate
+        fees
+        feeTypes {
+          feeTypeId
+          feeTypeName
+          description
+          transactionTypes {
+            transactionTypeId
+            transactionTypeName
+            transactionTypeCode
+            description
+            currency
+            modifiedBy
+            modifiedOn
+          }
+          paymentFrequency
+          effectiveDate
+          fixedRate
+          modifiedBy
+          modifiedOn
+        }
+        riskRating
+        prefix
+        numberSchema
+        startingValue
+        modifiedBy
+        modifiedOn
+      }
       accountCurrency
       riskRating
-      directorsKYC
+      directorsKYC {
+        IndividualKYCId
+        kycType
+        designation
+        firstName
+        middleName
+        lastName
+        phoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        country
+        taxNumber
+        idType
+        idNumber
+        sex
+        nationality
+        riskRating
+        attachDocumentsField
+        signature
+        modifiedBy
+        modifiedOn
+      }
       accountMandates
       modifiedBy
       modifiedOn
@@ -539,18 +903,8 @@ mutation CreateCustomer($customerType: String, $retail: String, $business: Strin
 export const UPDATE_CUSTOMER = gql`
 mutation UpdateCustomer($customerId: String, $customerType: String, $retail: String, $business: String, $accounts: [String], $accountMandates: [String], $mandateRules: [String], $modifiedBy: String, $modifiedOn: String) {
   updateCustomer(customerId: $customerId, customerType: $customerType, retail: $retail, business: $business, accounts: $accounts, accountMandates: $accountMandates, mandateRules: $mandateRules, modifiedBy: $modifiedBy, modifiedOn: $modifiedOn) {
-    business {
-      businessId
-      legalEntityName
-      businessKYC
-      productTypes
-      accountCurrency
-      riskRating
-      directorsKYC
-      accountMandates
-      modifiedBy
-      modifiedOn
-    }
+    customerId
+    customerType
     retail {
       retailId
       retailType
@@ -618,6 +972,93 @@ mutation UpdateCustomer($customerId: String, $customerType: String, $retail: Str
       modifiedBy
       modifiedOn
     }
+    business {
+      businessId
+      legalEntityName
+      businessKYC {
+        businessKYCId
+        kycType
+        legalEntityName
+        legalStatus
+        dateOfIncorporation
+        registrationNumber
+        natureOfBusiness
+        entityNationality
+        entityPinNumber
+        entityTaxNumber
+        telephoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        riskRating
+        attachDocumentsField
+        modifiedBy
+        modifiedOn
+      }
+      productTypes {
+        productTypeId
+        productTypeName
+        description
+        active
+        interestBearing
+        fixedInterestRate
+        effectiveDate
+        fees
+        feeTypes {
+          feeTypeId
+          feeTypeName
+          description
+          transactionTypes {
+            transactionTypeId
+            transactionTypeName
+            transactionTypeCode
+            description
+            currency
+            modifiedBy
+            modifiedOn
+          }
+          paymentFrequency
+          effectiveDate
+          fixedRate
+          modifiedBy
+          modifiedOn
+        }
+        riskRating
+        prefix
+        numberSchema
+        startingValue
+        modifiedBy
+        modifiedOn
+      }
+      accountCurrency
+      riskRating
+      directorsKYC {
+        IndividualKYCId
+        kycType
+        designation
+        firstName
+        middleName
+        lastName
+        phoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        country
+        taxNumber
+        idType
+        idNumber
+        sex
+        nationality
+        riskRating
+        attachDocumentsField
+        signature
+        modifiedBy
+        modifiedOn
+      }
+      accountMandates
+      modifiedBy
+      modifiedOn
+    }
     accounts {
       id
       name
@@ -636,8 +1077,6 @@ mutation UpdateCustomer($customerId: String, $customerType: String, $retail: Str
       modifiedBy
       modifiedOn
     }
-    customerId
-    customerType
     mandateRules {
       mandateRuleId
       customerId
@@ -730,11 +1169,86 @@ mutation DeleteCustomer($customerId: String) {
     business {
       businessId
       legalEntityName
-      businessKYC
-      productTypes
+      businessKYC {
+        businessKYCId
+        kycType
+        legalEntityName
+        legalStatus
+        dateOfIncorporation
+        registrationNumber
+        natureOfBusiness
+        entityNationality
+        entityPinNumber
+        entityTaxNumber
+        telephoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        riskRating
+        attachDocumentsField
+        modifiedBy
+        modifiedOn
+      }
+      productTypes {
+        productTypeId
+        productTypeName
+        description
+        active
+        interestBearing
+        fixedInterestRate
+        effectiveDate
+        fees
+        feeTypes {
+          feeTypeId
+          feeTypeName
+          description
+          transactionTypes {
+            transactionTypeId
+            transactionTypeName
+            transactionTypeCode
+            description
+            currency
+            modifiedBy
+            modifiedOn
+          }
+          paymentFrequency
+          effectiveDate
+          fixedRate
+          modifiedBy
+          modifiedOn
+        }
+        riskRating
+        prefix
+        numberSchema
+        startingValue
+        modifiedBy
+        modifiedOn
+      }
       accountCurrency
       riskRating
-      directorsKYC
+      directorsKYC {
+        IndividualKYCId
+        kycType
+        designation
+        firstName
+        middleName
+        lastName
+        phoneNumber
+        emailAddress
+        postalAddress
+        physicalAddress
+        country
+        taxNumber
+        idType
+        idNumber
+        sex
+        nationality
+        riskRating
+        attachDocumentsField
+        signature
+        modifiedBy
+        modifiedOn
+      }
       accountMandates
       modifiedBy
       modifiedOn

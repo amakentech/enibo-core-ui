@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, useState } from "react";
+import { FC } from "react";
 import {
   Table,
   TableBody,
@@ -19,39 +19,28 @@ import { ValueIcon } from "@radix-ui/react-icons";
 interface CustomerKYCProps {}
 
 const CustomerKYC: FC<CustomerKYCProps> = () => {
-  const {customerId} = useParams();
+  const { customerId } = useParams();
   const isEditMode = customerId ? true : false;
   const { appState, setAppState } = useAppState();
   console.log(appState);
-  const individuals = appState.individuals;
-  const businesses = appState.businesses;
+  const accountOwners = appState.accountOwners;
+  const otherKYCs = appState.otherKYCs;
 
-  const [selectedRows, setSelectedRows] = useState<object[]>([]);
-  const isAllRowsSelected = selectedRows.length === individuals?.length;
-
-  const handleRowSelect = (row: object) => {
-    if (selectedRows.includes(row)) {
-      setSelectedRows(selectedRows.filter((r) => r !== row));
-    } else {
-      setSelectedRows([...selectedRows, row]);
-    }
-  };
-  const handleSelectAllRows = (event: ChangeEvent<HTMLInputElement>) => {
-    const allIndividuals = individuals?.map((individual) => individual) || [];
-    if (event.target.checked) {
-      setSelectedRows(allIndividuals);
-    } else {
-      setSelectedRows([]);
-    }
-  };
-
-  const handleDelete = (index: number) => {
-    const newIndividuals = individuals.filter((_, i) => i !== index);
+  const handleOwnersDelete = (index: number) => {
+    const newAccountOners = accountOwners.filter((_, i) => i !== index);
     setAppState({
       ...appState,
-      individuals: newIndividuals,
+      accountOwners: newAccountOners,
     });
-  }
+  };
+
+  const handleOtherKYCDelete = (index: number) => {
+    const newOtherKYCs = otherKYCs.filter((_, i) => i !== index);
+    setAppState({
+      ...appState,
+      otherKYCs: newOtherKYCs,
+    });
+  };
 
   const navigate = useNavigate();
   const saveData = (customer: string) => {
@@ -136,12 +125,13 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
             <div className="flex items-center justify-between pb-2 items">
               <h3>Account Holder KYC</h3>
               <div className="flex gap-4">
-                <KYCSelector listType="retail" />
+                <KYCSelector listType="accountOwners" />
+
                 {appState.customerType === "retail" ? (
-                  <NewKYC listType="retail" />
+                  <NewKYC listType="accountOwners" />
                 ) : (
                   <>
-                    <NewBKYC listType="retail" />
+                    <NewBKYC listType="accountOwners" />
                   </>
                 )}
               </div>
@@ -150,13 +140,6 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
               <Table className="border">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[2%]">
-                      <input
-                        type="checkbox"
-                        checked={isAllRowsSelected}
-                        onChange={handleSelectAllRows}
-                      />
-                    </TableHead>
                     <TableHead>KYC ID</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>KYC Type</TableHead>
@@ -165,21 +148,16 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {individuals?.map((individual, index) => (
+                  {accountOwners?.map((individual, index) => (
                     <TableRow key={individual.kycId}>
-                      <TableCell>
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.includes(individual)}
-                          onChange={() => handleRowSelect(individual)}
-                        />
-                      </TableCell>
                       <TableCell>{individual.kycId}</TableCell>
                       <TableCell>{individual.createdBy}</TableCell>
                       <TableCell>{individual.kycType}</TableCell>
                       <TableCell>{individual.status}</TableCell>
                       <TableCell>
-                        <Button onClick={()=>handleDelete(index)}>Delete</Button>
+                        <Button onClick={() => handleOwnersDelete(index)}>
+                          Delete
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -189,15 +167,16 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
           </div>
         </>
       )}
+
       {appState.customerType === "business" && (
         <>
           <div>
             <div className="flex items-center justify-between pb-2 items">
               <h3>Other KYC</h3>
               <div className="flex gap-4">
-                <KYCSelector listType="business" />
+                <KYCSelector listType="otherKYCs" />
                 <>
-                  <NewKYC listType="business" />
+                  <NewKYC listType="otherKYCs" />
                 </>
               </div>
             </div>
@@ -205,33 +184,25 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
               <Table className="border">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[2%]">
-                      <input
-                        type="checkbox"
-                        checked={isAllRowsSelected}
-                        onChange={handleSelectAllRows}
-                      />
-                    </TableHead>
                     <TableHead>KYC ID</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>KYC Type</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {businesses?.map((individual) => (
+                  {otherKYCs?.map((individual, index) => (
                     <TableRow key={individual.kycId}>
-                      <TableCell>
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.includes(individual)}
-                          onChange={() => handleRowSelect(individual)}
-                        />
-                      </TableCell>
                       <TableCell>{individual.kycId}</TableCell>
                       <TableCell>{individual.createdBy}</TableCell>
                       <TableCell>{individual.kycType}</TableCell>
                       <TableCell>{individual.status}</TableCell>
+                      <TableCell>
+                        <Button onClick={() => handleOtherKYCDelete(index)}>
+                          Delete
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -240,12 +211,20 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
           </div>
         </>
       )}
-      {appState.customerType !== "" && (<div className="flex gap-2">
-        <Button>Save</Button>
-        <Button onClick={() => isEditMode ? navigate(`/customers/customer-wizard/${customerId}/products`) : navigate("/customers/customer-wizard/products")}>
-          Next
-        </Button>
-      </div>)}
+      {appState.customerType !== "" && (
+        <div className="flex gap-2">
+          <Button>Save</Button>
+          <Button
+            onClick={() =>
+              isEditMode
+                ? navigate(`/customers/customer-wizard/${customerId}/products`)
+                : navigate("/customers/customer-wizard/products")
+            }
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
