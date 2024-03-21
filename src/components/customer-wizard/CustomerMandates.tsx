@@ -511,7 +511,7 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
   };
 
   const checkIfSaved = () => {
-    if ((appState.customer && appState.business) || appState.retail) {
+    if (appState.customer) {
       isEditMode
         ? navigate(`/customers/customer-wizard/${customerId}/mandate-rules`)
         : navigate("/customers/customer-wizard/mandate-rules");
