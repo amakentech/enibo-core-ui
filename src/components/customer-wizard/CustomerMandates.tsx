@@ -177,8 +177,8 @@ const CustomerMandates: FC<CustomerMandatesProps> = () => {
           retailType: appState.customerType,
           individualKyc: appState.accountOwners[0].kycId,
           productTypes: appState.productInput.productTypes,
-          accountCurrency: appState.product.accountCurrency,
-          riskRating: appState.product.riskRating,
+          accountCurrency: appState.productInput.accountCurrency,
+          riskRating: appState.productInput.riskRating,
           accountMandates: mandates.map((mandate) => mandate.mandateId),
           modifiedBy: user.id,
           modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
