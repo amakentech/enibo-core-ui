@@ -66,33 +66,26 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
   const navigate = useNavigate();
   const [updateIndividualKyc] = useMutation(UPDATE_INDIVIDUAL_KYC);
   const [KYCTypes, setKycsTypes] = useState<KYCType[]>([]);
-
+    
+  const {
+    data,
+    loading: queryLoading,
+    error: queryError,
+  } = useQuery(queryKycTypesList);
+  
   const { data: individualKYCData } = useQuery(queryIndividualKYC, {
     variables: {
       individualKycId: IndividualKYCId,
     },
   });
+
   
-  const defaultFormValues = {
-    kycType: "",
-    designation: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    phoneNumber: "",
-    emailAddress: "",
-    postalAddress: "",
-    physicalAddress: "",
-    country: "",
-    taxNumber: "",
-    idType: "",
-    idNumber: "",
-    sex: "",
-    nationality: "",
-    riskRating: "",
-    attachDocumentsField: "",
-    signature: "",
-  };
+  useEffect(() => {
+    if (data) {
+      setKycsTypes(data.kycTypes);
+    }
+  }, [data, queryLoading, queryError]);
+
   const {
     register,
     handleSubmit,
@@ -101,21 +94,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
     formState: { errors },
   } = useForm<NewKYCIndividualInput>({
     resolver: zodResolver(newKYCIndividualSchema),
-    defaultValues: defaultFormValues,
   });
-
-  const {
-    data,
-    loading: queryLoading,
-    error: queryError,
-  } = useQuery(queryKycTypesList);
-
-  useEffect(() => {
-    if (data) {
-      setKycsTypes(data.kycTypes);
-    }
-  }, [data, queryLoading, queryError]);
-
 
 
   const handleCreate = (data: NewKYCIndividualInput) => {

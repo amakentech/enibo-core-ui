@@ -83,8 +83,8 @@ const NewBranchForm: FC<NewBranchFormProps> = () => {
     resolver: zodResolver(newBranchSchema),
   });
 
-  const [createBranchMutation] = useMutation(CREATE_BRANCH);
-  const [updateBranchMutation] = useMutation(UPDATE_BRANCH);
+  const [createBranchMutation, {loading:createLoading}] = useMutation(CREATE_BRANCH);
+  const [updateBranchMutation, {loading:updateLoading}] = useMutation(UPDATE_BRANCH);
 
   const { data: branchData, loading: branchLoading } = useQuery(
     queryBranchList,
@@ -105,50 +105,106 @@ const NewBranchForm: FC<NewBranchFormProps> = () => {
           return productType.value;
         }
       );
-      const input = {
-        branchId: data.branchId,
-        branchName: data.branchName,
-        branchType: data.branchType,
-        description: data.description,
-        branchCode: data.branchCode,
-        phoneNumber: data.phoneNumber,
-        swiftCode: data.SWIFTCode,
-        localBankCode: data.localBankCode,
-        country: data.country,
-        countrySubdivision: data.countrySubdivision,
-        streetName: data.streetName,
-        buildingNumber: data.buildingNumber,
-        buildingName: data.buildingName,
-        postalAddress: data.postalAddress,
-        allowedProductTypes: newProductType,
-        email: data.email,
-        isHeadOfficeBranch: data.isHeadOfficeBranch === "yes" ? true : false,
-        headOfficeBranch: data.headOfficeBranch ? data.headOfficeBranch : "N/A",
-      };
-      await updateBranchMutation({
-        variables: input,
-      });
-
-      reset();
-      navigate("/administration/branches");
-
-      toast({
-        title: "Branch Updated",
-        description: (
-          <div className="text-black">
-            <div className="text-lg">
-              Branch{" "}
-              <Link
-                to={`/administration/branches`}
-                className="text-blue-500 underline"
-              >
-                {data.branchId}
-              </Link>
-              , has been successfully updated
+      //check if head office branch is selected
+      if (data.headOfficeBranch === "yes") {
+        const input = {
+          branchId: data.branchId,
+          branchName: data.branchName,
+          branchType: data.branchType,
+          description: data.description,
+          branchCode: data.branchCode,
+          phoneNumber: data.phoneNumber,
+          swiftCode: data.SWIFTCode,
+          localBankCode: data.localBankCode,
+          country: data.country,
+          countrySubdivision: data.countrySubdivision,
+          streetName: data.streetName,
+          buildingNumber: data.buildingNumber,
+          buildingName: data.buildingName,
+          postalAddress: data.postalAddress,
+          allowedProductTypes: newProductType,
+          email: data.email,
+          isHeadOfficeBranch: true,
+          headOfficeBranch: "N/A",
+        };
+        await updateBranchMutation({
+          variables: input,
+        });
+        reset();
+        navigate("/administration/branches");
+  
+        toast({
+          title: "Branch Updated",
+          description: (
+            <div className="text-black">
+              <div className="text-lg">
+                Branch{" "}
+                <Link
+                  to={`/administration/branches`}
+                  className="text-blue-500 underline"
+                >
+                  {data.branchId}
+                </Link>
+                , has been successfully updated
+              </div>
             </div>
-          </div>
-        ),
-      });
+          ),
+        });
+      }
+      //check if head office branch is not selected
+      else if (data.headOfficeBranch === "no" && !data.isHeadOfficeBranch) {
+        toast({
+          title: "Error",
+          description: "Please select a head office branch",
+          variant: "destructive",
+        });
+      } else {
+        const input = {
+          branchId: data.branchId,
+          branchName: data.branchName,
+          branchType: data.branchType,
+          description: data.description,
+          branchCode: data.branchCode,
+          phoneNumber: data.phoneNumber,
+          swiftCode: data.SWIFTCode,
+          localBankCode: data.localBankCode,
+          country: data.country,
+          countrySubdivision: data.countrySubdivision,
+          streetName: data.streetName,
+          buildingNumber: data.buildingNumber,
+          buildingName: data.buildingName,
+          postalAddress: data.postalAddress,
+          allowedProductTypes: newProductType,
+          email: data.email,
+          isHeadOfficeBranch: false,
+          headOfficeBranch: data.headOfficeBranch,
+        };
+        await updateBranchMutation({
+          variables: input,
+        });
+        reset();
+        navigate("/administration/branches");
+  
+        toast({
+          title: "Branch Updated",
+          description: (
+            <div className="text-black">
+              <div className="text-lg">
+                Branch{" "}
+                <Link
+                  to={`/administration/branches`}
+                  className="text-blue-500 underline"
+                >
+                  {data.branchId}
+                </Link>
+                , has been successfully updated
+              </div>
+            </div>
+          ),
+        });
+      }
+
+
     } catch (error: any) {
       const errorMessage =
         error.graphQLErrors?.[0]?.extensions?.response?.body?.message ||
@@ -169,50 +225,102 @@ const NewBranchForm: FC<NewBranchFormProps> = () => {
           return productType.value;
         }
       );
-      const input = {
-        branchId: data.branchId,
-        branchName: data.branchName,
-        branchType: data.branchType,
-        description: data.description || "N/A",
-        branchCode: data.branchCode,
-        phoneNumber: data.phoneNumber,
-        swiftCode: data.SWIFTCode,
-        localBankCode: data.localBankCode,
-        country: data.country,
-        countrySubdivision: data.countrySubdivision,
-        streetName: data.streetName,
-        buildingNumber: data.buildingNumber,
-        buildingName: data.buildingName,
-        postalAddress: data.postalAddress,
-        allowedProductTypes: newProductType,
-        email: data.email,
-        isHeadOfficeBranch: data.isHeadOfficeBranch === "yes" ? true : false,
-        headOfficeBranch: data.headOfficeBranch ? data.headOfficeBranch : "N/A",
-      };
-
-      const response = await createBranchMutation({
-        variables: input,
-      });
-      reset();
-      localStorage.removeItem("branches");
-      navigate("/administration/branches");
-      toast({
-        title: "Branch Created",
-        description: (
-          <div className="text-black">
-            <div className="text-lg">
-              New Branch{" "}
-              <Link
-                to={`/administration/branches`}
-                className="text-blue-500 underline"
-              >
-                {response.data.createBranch.branchName}
-              </Link>
-              , has been successfully created
+      //check if head office branch is selected
+      if (data.isHeadOfficeBranch === "yes") {
+        const input = {
+          branchName: data.branchName,
+          branchType: data.branchType,
+          description: data.description,
+          branchCode: data.branchCode,
+          phoneNumber: data.phoneNumber,
+          swiftCode: data.SWIFTCode,
+          localBankCode: data.localBankCode,
+          country: data.country,
+          countrySubdivision: data.countrySubdivision,
+          streetName: data.streetName,
+          buildingNumber: data.buildingNumber,
+          buildingName: data.buildingName,
+          postalAddress: data.postalAddress,
+          allowedProductTypes: newProductType,
+          email: data.email,
+          isHeadOfficeBranch: true,
+          headOfficeBranch: "N/A",
+        };
+        const response = await createBranchMutation({
+          variables: input,
+        });
+        console.log(response);
+        toast({
+          title: "Branch Created",
+          description: (
+            <div className="text-black">
+              <div className="text-lg">
+                New Branch{" "}
+                <Link
+                  to={`/administration/branches`}
+                  className="text-blue-500 underline"
+                >
+                  {response.data.createBranch.branchName}
+                </Link>
+                , has been successfully created
+              </div>
             </div>
-          </div>
-        ),
-      });
+          ),
+        });
+        reset();
+        localStorage.removeItem("branches");
+        navigate("/administration/branches");
+      } else if (data.isHeadOfficeBranch === "no" && !data.headOfficeBranch) {
+        toast({
+          title: "Error",
+          description: "Please select a head office branch",
+          variant: "destructive",
+        });
+      } else {
+        const input = {
+          branchName: data.branchName,
+          branchType: data.branchType,
+          description: data.description,
+          branchCode: data.branchCode,
+          phoneNumber: data.phoneNumber,
+          swiftCode: data.SWIFTCode,
+          localBankCode: data.localBankCode,
+          country: data.country,
+          countrySubdivision: data.countrySubdivision,
+          streetName: data.streetName,
+          buildingNumber: data.buildingNumber,
+          buildingName: data.buildingName,
+          postalAddress: data.postalAddress,
+          allowedProductTypes: newProductType,
+          email: data.email,
+          isHeadOfficeBranch: false,
+          headOfficeBranch: data.headOfficeBranch,
+        };
+        const response = await createBranchMutation({
+          variables: input,
+        });
+        console.log(response);
+        toast({
+          title: "Branch Created",
+          description: (
+            <div className="text-black">
+              <div className="text-lg">
+                New Branch{" "}
+                <Link
+                  to={`/administration/branches`}
+                  className="text-blue-500 underline"
+                >
+                  {response.data.createBranch.branchName}
+                </Link>
+                , has been successfully created
+              </div>
+            </div>
+          ),
+        });
+        reset();
+        localStorage.removeItem("branches");
+        navigate("/administration/branches");
+      }
     } catch (error: any) {
       const errorMessage =
         error.graphQLErrors?.[0]?.extensions?.response?.body?.message ||
@@ -642,8 +750,8 @@ const NewBranchForm: FC<NewBranchFormProps> = () => {
                             .filter((branch) => !branch.isHeadOfficeBranch) // Filter out branches where isHeadOfficeBranch is false
                             .map((branch) => (
                               <SelectItem
-                                key={branch.branchName}
-                                value={branch.branchName}
+                                key={branch.branchId}
+                                value={branch.branchId}
                               >
                                 {branch.branchName}
                               </SelectItem>
@@ -669,6 +777,7 @@ const NewBranchForm: FC<NewBranchFormProps> = () => {
               type="submit"
               size="lg"
               className="bg-[#36459C] hover:bg-[#253285]"
+              disabled={createLoading || updateLoading}
             >
               Submit
             </Button>

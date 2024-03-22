@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,13 +12,6 @@ import {
   UPDATE_LEDGER_ACCOUNT_CATEGORIES,
 } from "./ledger-categories-list/mutation";
 import queryaccountcategoriesList from "./ledger-categories-list/query";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "./ui/use-toast";
 import { useEffect, useState, FC } from "react";
@@ -41,7 +34,7 @@ interface NewLedgerCategoryFormProps {}
 const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = id ? true : false;
-  const storedLedgerCategory = localStorage.getItem("ledgerCategoryFormMode");
+  const storedLedgerCategory = localStorage.getItem("ledgerCategory");
   const isCopyMode = storedLedgerCategory ? true : false;
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -51,15 +44,14 @@ const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
     setValue,
     reset,
     formState: { errors },
-    control,
   } = useForm<LedgerCategoryFormInputs>({
     resolver: zodResolver(LedgerCategorySchema),
   });
 
-  const [updateLedgerAccountCategoriesMutation] = useMutation(
+  const [updateLedgerAccountCategoriesMutation, {loading:updateLoading}] = useMutation(
     UPDATE_LEDGER_ACCOUNT_CATEGORIES
   );
-  const [createledgerAccountCategoriesMutation] = useMutation(
+  const [createledgerAccountCategoriesMutation, {loading:createLoading}] = useMutation(
     CREATE_LEDGER_ACCOUNT_CATEGORIES
   );
 
@@ -91,7 +83,7 @@ const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
       console.log("Updated Ledger Data", response);
       reset();
       navigate(`/administration/ledger-management/ledger-account-categories`);
-
+      window.location.reload();
       toast({
         title: "Ledger Category Updated",
         description: (
@@ -143,7 +135,8 @@ const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
       });
       reset();
       navigate(`/administration/ledger-management/ledger-account-categories`);
-
+      localStorage.removeItem("ledgerCategory");
+      window.location.reload();
       toast({
         title: "Ledger Category Created",
         description: (
@@ -247,20 +240,12 @@ const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
         <div className="grid grid-cols-1 gap-4 w-[30%]">
           <div>
             <Label>Ledger Category</Label>
-            <Controller
-              control={control}
-              name="ledgerCategory"
-              render={({ field: { onChange, value } }) => (
-                <Select onValueChange={onChange} value={value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sales">Sales</SelectItem>
-                    <SelectItem value="Internal">Internal</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
+            <Input
+              {...register("ledgerCategory")}
+              placeholder="Ledger Category"
+              type="text"
+              className="h-12 text-base bg-blue-50"
+              autoComplete="false"
             />
             {errors.ledgerCategory && (
               <span className="text-red-500">
@@ -323,6 +308,7 @@ const NewLedgerCategoryForm: FC<NewLedgerCategoryFormProps> = () => {
             type="submit"
             size="lg"
             className="bg-[#36459C] hover:bg-[#253285]"
+            disabled={createLoading || updateLoading}
           >
             Submit
           </Button>
