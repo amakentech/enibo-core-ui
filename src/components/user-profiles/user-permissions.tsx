@@ -49,7 +49,55 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
   const isEditMode = id ? true : false;
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const [tab, setTab] = useState(0);
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [modules, setModules] = useState([
+    {
+      moduleName: "Branch Management",
+      subModules: ["Branches", "Branch Types"],
+    },
+    {
+      moduleName: "Product Management",
+      subModules: ["Product Types"],
+    },
+    {
+      moduleName: "Approval Management",
+      subModules: ["Aprovals", "Approval Rules"],
+    },
+    {
+      moduleName: "Static Data",
+      subModules: [
+        "Countries",
+        "Currencies",
+        "Fee Types",
+        "Transaction Types",
+        "Business Calendars",
+      ],
+    },
+    {
+      moduleName: "Ledger Management",
+      subModules: [
+        "Ledger Account Category",
+        "Ledger Accounts",
+        "Ledger Rules",
+      ],
+    },
+    {
+      moduleName: "User Management",
+      subModules: ["Users", "User Profiles"],
+    },
+    {
+      moduleName: "Customer Management",
+      subModules: ["Customers", "KYC Types", "KYCs", "Account Mandate Types"],
+    },
+    {
+      moduleName: "App Settings",
+      subModules: ["App Settings List"],
+    },
+    // Add more modules and submodules as needed
+  ]);
 
+ 
   const {
     handleSubmit,
     register,
@@ -58,6 +106,20 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
   } = useForm<UserPermissionsInput>({
     resolver: zodResolver(UserPermissionSchema),
   });
+
+  const toggleModuleCheckbox = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
+    const isChecked = e.target.checked;
+    const checkedValue = e.target.value;
+    // Update permissions for the selected module and its submodules
+    console.log("isChecked", isChecked, "checkedValue", checkedValue, name);
+    if (isChecked) {
+      setSelectedModules([...selectedModules, name]);
+    } else {
+      setSelectedModules(selectedModules.filter((module) => module !== name));
+    }
+  };
+
+
   const { data } = useQuery(queryUserProfile, {
     variables: {
       settingId: id ? id : "",
@@ -208,7 +270,7 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
             )}
           </div>
           <div>
-            <Collapsible className="w-full">
+            <div className="w-full">
               <Table className="w-full">
                 <TableHeader>
                   <TableRow>
@@ -223,115 +285,132 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="w-full">
-                  <TableRow className="w-full">
-                    <TableCell className="flex items-center w-[70%] gap-2">
-                      <input
-                        type="checkbox"
-                        {...register("permissions", {
-                          required: "Please select permissions",
-                        })}
-                        value="Branch Management"
-                      />
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      </CollapsibleTrigger>
-                      <span className="">Branch Management</span>
-                    </TableCell>
-                    <TableCell className="w-[10%]">
-                      <input
-                        type="checkbox"
-                        {...register("permissions", {
-                          required: "Please select permissions",
-                        })}
-                        value="view"
-                      />
-                    </TableCell>
-                    <TableCell className="w-[10%]">
-                      <input
-                        type="checkbox"
-                        {...register("permissions", {
-                          required: "Please select permissions",
-                        })}
-                        value="create"
-                      />
-                    </TableCell>
-                    <TableCell className="w-[10%]">
-                      <input
-                        type="checkbox"
-                        {...register("permissions", {
-                          required: "Please select permissions",
-                        })}
-                        value="edit"
-                      />
-                    </TableCell>
-                    <TableCell className="w-[10%]">
-                      <input
-                        type="checkbox"
-                        {...register("permissions", {
-                          required: "Please select permissions",
-                        })}
-                        value="delete"
-                      />
-                    </TableCell>
-                  </TableRow>
-                  <CollapsibleContent className="w-full" asChild>
-                    <TableRow className="w-full">
-                      <TableCell className="flex items-center w-[70%] gap-2">
-                        <Button variant="ghost" size="icon" className="">
-                          <div></div>
-                        </Button>
-                        <input
-                          type="checkbox"
-                          {...register("permissions", {
-                            required: "Please select permissions",
-                          })}
-                          value="Manage Branches"
-                        />
-                        <span className="">Manage Branches</span>
-                      </TableCell>
-                      <TableCell className="w-[10%]">
-                        <input
-                          type="checkbox"
-                          {...register("permissions", {
-                            required: "Please select permissions",
-                          })}
-                          value="view"
-                        />
-                      </TableCell>
-                      <TableCell className="w-[10%]">
-                        <input
-                          type="checkbox"
-                          {...register("permissions", {
-                            required: "Please select permissions",
-                          })}
-                          value="create"
-                        />
-                      </TableCell>
-                      <TableCell className="w-[10%]">
-                        <input
-                          type="checkbox"
-                          {...register("permissions", {
-                            required: "Please select permissions",
-                          })}
-                          value="edit"
-                        />
-                      </TableCell>
-                      <TableCell className="w-[10%]">
-                        <input
-                          type="checkbox"
-                          {...register("permissions", {
-                            required: "Please select permissions",
-                          })}
-                          value="delete"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  </CollapsibleContent>
+                  {modules.map((module, index) => (
+                    <Collapsible key={index} className="w-full" asChild>
+                      <>
+                        <TableRow className="w-full">
+                          <TableCell className="flex items-center w-[70%] gap-2">
+                            <input
+                              type="checkbox"
+                              {...register("permissions", {
+                                required: "Please select permissions",
+                              })}
+                              value={module.moduleName}
+                              onChange={(e) =>
+                                toggleModuleCheckbox(e, module.moduleName)
+                              }
+                            />
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <ChevronRight className="w-4 h-4" />
+                              </Button>
+                            </CollapsibleTrigger>
+                            <span className="">{module.moduleName}</span>
+                          </TableCell>
+                          <TableCell className="w-[10%]">
+                            <input
+                              type="checkbox"
+                              {...register("permissions", {
+                                required: "Please select permissions",
+                              })}
+                              value="view"
+                            />
+                          </TableCell>
+                          <TableCell className="w-[10%]">
+                            <input
+                              type="checkbox"
+                              {...register("permissions", {
+                                required: "Please select permissions",
+                              })}
+                              value="create"
+                            />
+                          </TableCell>
+                          <TableCell className="w-[10%]">
+                            <input
+                              type="checkbox"
+                              {...register("permissions", {
+                                required: "Please select permissions",
+                              })}
+                              value="edit"
+                            />
+                          </TableCell>
+                          <TableCell className="w-[10%]">
+                            <input
+                              type="checkbox"
+                              {...register("permissions", {
+                                required: "Please select permissions",
+                              })}
+                              value="delete"
+                            />
+                          </TableCell>
+                        </TableRow>
+                        <CollapsibleContent className="w-full" asChild>
+                          <>
+                            {module.subModules.map((subModule, index) => (
+                              <TableRow className="w-full" key={index}>
+                                <TableCell className="flex items-center w-[70%] gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className=""
+                                  >
+                                    <div></div>
+                                  </Button>
+                                  <input
+                                    type="checkbox"
+                                    {...register("permissions", {
+                                      required: "Please select permissions",
+                                    })}
+                                    value={subModule}
+                                  />
+                                  <span className="">{subModule}</span>
+                                </TableCell>
+                                <TableCell className="w-[10%]">
+                                  <input
+                                    type="checkbox"
+                                    {...register("permissions", {
+                                      required: "Please select permissions",
+                                    })}
+                                    value="view"
+                                  />
+                                </TableCell>
+                                <TableCell className="w-[10%]">
+                                  <input
+                                    type="checkbox"
+                                    {...register("permissions", {
+                                      required: "Please select permissions",
+                                    })}
+                                    value="create"
+                                  />
+                                </TableCell>
+                                <TableCell className="w-[10%]">
+                                  <input
+                                    type="checkbox"
+                                    {...register("permissions", {
+                                      required: "Please select permissions",
+                                    })}
+                                    value="edit"
+                                  />
+                                </TableCell>
+                                <TableCell className="w-[10%]">
+                                  <input
+                                    type="checkbox"
+                                    {...register("permissions", {
+                                      required: "Please select permissions",
+                                    })}
+                                    value="delete"
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </>
+                        </CollapsibleContent>
+                      </>
+                    </Collapsible>
+                  ))}
                 </TableBody>
               </Table>
-            </Collapsible>
+            </div>
           </div>
         </>
       )}

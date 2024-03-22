@@ -289,7 +289,7 @@ const NewLedgerRuleForm: FC<NewLedgerRuleFormProps> = () => {
         }
       />
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 gap-4 w-[30%]">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <Label htmlFor="priority">Priority</Label>
             <Controller
