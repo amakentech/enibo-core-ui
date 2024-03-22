@@ -21,9 +21,10 @@ import {
   CREATE_LEDGER_ACCOUNT,
   UPDATE_LEDGER_ACCOUNT,
 } from "@/types/mutations";
-import { ledgerAccountQuery } from "@/types/queries";
+import { ledgerAccountQuery, queryAccounts } from "@/types/queries";
 import queryaccountcategoriesList from "./ledger-categories-list/query";
-import { LedgerCategory } from "@/types/global";
+import { Account, BranchForm, LedgerCategory } from "@/types/global";
+import queryBranchList from "./branch-list/query";
 
 const ledgerAccountSchema = z.object({
   ledgerAccountNumber: z
@@ -40,7 +41,12 @@ const ledgerAccountSchema = z.object({
       value: z.string(),
     })
   ),
-  branchCode: z.string().min(3, { message: "Branch Code is required" }),
+  branchCode: z.array(
+    z.object({
+      label: z.string(),
+      value: z.string(),
+    })
+  ),
   ledgerAccountCategory: z.array(
     z.object({
       label: z.string(),
@@ -58,6 +64,8 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
  
   const storedAccount = localStorage.getItem("ledgerAccount");
   const [accountLabels, setAccountLabels] = useState<OptionType[]>([]);
+  const [customerAccountNumbers, setCustomerAccountNumbers] = useState<OptionType[]>([]);
+  const [branchCodes, setBranchCodes] = useState<OptionType[]>([]);
   
   const isCopyMode = storedAccount ? true : false;
   const { id } = useParams();
@@ -72,13 +80,17 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
     reset,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<LedgerAccount>({
     resolver: zodResolver(ledgerAccountSchema),
   });
+
+  //watch ledger account type
+  const ledgerAccountTypeStatus = watch("ledgerAccountType");
   
-  const [createLedgerAccount] = useMutation(CREATE_LEDGER_ACCOUNT);
-  const [updateLedgerAccount] = useMutation(UPDATE_LEDGER_ACCOUNT);
+  const [createLedgerAccount, {loading: createLoading}] = useMutation(CREATE_LEDGER_ACCOUNT);
+  const [updateLedgerAccount, {loading: updateLoading}] = useMutation(UPDATE_LEDGER_ACCOUNT);
 
   const handleCreate = async (data: LedgerAccount) => {
     try {
@@ -88,8 +100,8 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
           ledgerAccountNumber: data.ledgerAccountNumber,
           exportAccountNumber: data.exportLedgerAccountNumber,
           description: data.description,
-          customerAccountNumber: data.customerAccountNumber[0].value,
-          branchId: data.branchCode,
+          customerAccountNumber: data.customerAccountNumber[0].value || "N/A",
+          branchId: data.branchCode[0].value,
           accountCategoryId: data.ledgerAccountCategory[0].value,
           chartString: data.chartString,
           normalBalance: "CREDIT",
@@ -138,8 +150,8 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
           ledgerAccountNumber: data.ledgerAccountNumber,
           exportAccountNumber: data.exportLedgerAccountNumber,
           description: data.description,
-          customerAccountNumber: data.customerAccountNumber[0].value,
-          branchId: data.branchCode,
+          customerAccountNumber: data.customerAccountNumber[0].value || "N/A",
+          branchId: data.branchCode[0].value,
           accountCategoryId: data.ledgerAccountCategory[0].value,
           chartString: data.chartString,
           normalBalance: "CREDIT",
@@ -191,6 +203,32 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
       accountNumber: id ? id : "",
     },
   });
+
+  const {data: customerAccountData} = useQuery(queryAccounts)
+  const { data: branchData } = useQuery(queryBranchList);
+
+  useEffect(() => {
+    if (branchData) {
+      const newBranchCodes = branchData.branches.map((branch: BranchForm) => {
+        return {
+          label: branch.branchName,
+          value: branch.branchId,
+        };
+      });
+      setBranchCodes([...newBranchCodes]);
+    }
+   if (customerAccountData) {
+      const newCustomerAccountNumbers = customerAccountData.accounts.map(
+        (account: Account) => {
+          return {
+            label: account.name,
+            value: account.id,
+          };
+        }
+      );
+      setCustomerAccountNumbers([...newCustomerAccountNumbers]);
+    }
+  }, [customerAccountData, branchData]);
   
   useEffect(() => {
     if (data) {
@@ -232,11 +270,16 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
           value: customer_account_number,
         
         }]
+        const branchLabel = [{
+          label: branch_id,
+          value: branch_id,
+        }]
+
         setValue("ledgerAccountNumber", account_number);
         setValue("exportLedgerAccountNumber", export_account_number);
         setValue("description", description);
         setValue("customerAccountNumber", customerLabel);
-        setValue("branchCode", branch_id);
+        setValue("branchCode", branchLabel);
         setValue("ledgerAccountCategory", categoryLabel);
         setValue("chartString", chart_string);
       }
@@ -263,11 +306,15 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
           label: customer_account_number,
           value: customer_account_number,
         }]
+        const branchLabel = [{
+          label: branch_id,
+          value: branch_id,
+        }]
         setValue("ledgerAccountNumber", account_number);
         setValue("exportLedgerAccountNumber", export_account_number);
         setValue("description", description);
         setValue("customerAccountNumber", newCustomerAccountNumber);
-        setValue("branchCode", branch_id);
+        setValue("branchCode", branchLabel);
         setValue("ledgerAccountCategory", categoryLabel);
         setValue("chartString", chart_string);
       }
@@ -276,7 +323,30 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
   return (
     <section>
       <form className="" onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 gap-4 w-[30%]">
+        <div className="grid grid-cols-3 gap-4 w-full">
+        <div>
+            <Label htmlFor="ledgerAccountType">Ledger Account Type</Label>
+            <Controller
+              name="ledgerAccountType"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select onValueChange={onChange} value={value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select ..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Customer">Customer</SelectItem>
+                    <SelectItem value="Internal">Internal</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.ledgerAccountType && (
+              <span className="text-red-500">
+                {errors.ledgerAccountType.message}
+              </span>
+            )}
+          </div>
           <div>
             <Label htmlFor="ledgerAccountNumber">Ledger Account Number</Label>
             <Input
@@ -305,43 +375,16 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
               </span>
             )}
           </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" {...register("description")} />
-            {errors.description && (
-              <span className="text-red-500">{errors.description.message}</span>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="ledgerAccountType">Ledger Account Type</Label>
-            <Controller
-              name="ledgerAccountType"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Select onValueChange={onChange} value={value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Customer">Customer</SelectItem>
-                    <SelectItem value="Internal">Internal</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.ledgerAccountType && (
-              <span className="text-red-500">
-                {errors.ledgerAccountType.message}
-              </span>
-            )}
-          </div>
-          <div>
+          
+          
+          {ledgerAccountTypeStatus === "Customer" && (<div>
             <Label htmlFor="customerAccountNumber">
               Customer Account Number
             </Label>
             <Controller
               control={control}
               name="customerAccountNumber"
+              
               render={({ field: { onChange, value } }) => (
                 <MultiSelect
                   selected={value || []}
@@ -349,17 +392,8 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
                   className="w-[451px]"
                   placeholder="Select ..."
                   selectLimit={1}
-                  options={[
-                    { label: "A000-5858-88688", value: "A000-5858-88688" },
-                    { label: "A000-5757-74744", value: "A000-5757-74744" },
-                    { label: "A000-5858-89393", value: "A000-5858-89393" },
-                    { label: "A000-5995-75757", value: "A000-5995-75757" },
-                    { label: "A000-9499-94944", value: "A000-9499-94944" },
-                    { label: "A000-4884-93933", value: "A000-4884-93933" },
-                    { label: "A000-3939-39933", value: "A000-3939-39933" },
-                    { label: "A000-3329-26622", value: "A000-3329-26622" },
-                    { label: "A000-8282-49949", value: "A000-8282-49949" },
-                  ]}
+                  
+                  options={customerAccountNumbers}
                 />
               )}
             />
@@ -368,10 +402,25 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
                 {errors.customerAccountNumber.message}
               </span>
             )}
-          </div>
+          </div>)}
           <div>
-            <Label htmlFor="branchCode">Branch Code</Label>
-            <Input type="text" id="branchCode" {...register("branchCode")} />
+            <Label htmlFor="branchCode">Branch</Label>
+            <Controller
+              control={control}
+              name="branchCode"
+              
+              render={({ field: { onChange, value } }) => (
+                <MultiSelect
+                  selected={value || []}
+                  onChange={onChange}
+                  className="w-[451px]"
+                  placeholder="Select ..."
+                  selectLimit={1}
+                  
+                  options={branchCodes}
+                />
+              )}
+            />
             {errors.branchCode && (
               <span className="text-red-500">{errors.branchCode.message}</span>
             )}
@@ -401,6 +450,13 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
             )}
           </div>
           <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea id="description" {...register("description")} />
+            {errors.description && (
+              <span className="text-red-500">{errors.description.message}</span>
+            )}
+          </div>
+          <div>
             <Label htmlFor="chartString">Chart String</Label>
             <Input type="text" id="chartString" {...register("chartString")} />
             {errors.chartString && (
@@ -409,7 +465,7 @@ const NewLedgerAccountForm: FC<NewLedgerAccountFormProps> = () => {
           </div>
         </div>
         <div className="flex gap-2 mt-4">
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={createLoading || updateLoading}>Submit</Button>
           <Button type="button" onClick={()=> navigate("/administration/ledger-management/ledger-accounts")}>Cancel</Button>
         </div>
       </form>

@@ -247,3 +247,18 @@ query IndividualKYC($individualKycId: String!) {
   }
 }
 `
+
+export const queryAccounts = gql`
+query Accounts {
+  accounts {
+    id
+    name
+    account_owner
+    account_number
+    account_type
+    description
+    branch_id
+    normal_balance
+  }
+}
+`

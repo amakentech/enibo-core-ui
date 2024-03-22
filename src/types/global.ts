@@ -50,7 +50,7 @@ type MandateRule = {
   maximumDailyLimit: string;
 }
 
-type Account = {
+export type Account = {
   id: string;
   name: string;
   accountOwner: string;
