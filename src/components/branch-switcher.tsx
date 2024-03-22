@@ -16,33 +16,20 @@ import {
 } from "./ui/command";
 
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import queryBranchList from "./branch-list/query";
+import { useEffect } from "react";
+import { useQuery } from "@apollo/client";
+import { BranchForm } from "@/types/global";
 
-const groups = [
-  {
-    label: "Main Branch",
-    branches: [
-      {
-        label: "Nairobi Branch",
-        value: "nairobi-branch",
-      },
-    ],
-  },
-  {
-    label: "Branches",
-    branches: [
-      {
-        label: "Nyeri Branch.",
-        value: "nyeri-branch",
-      },
-      {
-        label: "Mombasa Branch.",
-        value: "mombasa-branch",
-      },
-    ],
-  },
-];``
+interface Branch {
+  label: string;
+  value: string;
+}
 
-type Branch = (typeof groups)[number]["branches"][number];
+interface Group {
+  label: string;
+  branches: Branch[];
+}
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -54,9 +41,62 @@ interface TeamSwitcherProps extends PopoverTriggerProps {
 
 export default function TeamSwitcher({ className }: TeamSwitcherProps) {
   const [open, setOpen] = React.useState(false);
+  const [branches, setBranches] = React.useState<Group[]>([]);
   const [selectedBranch, setSelectedBranch] = React.useState<Branch>(
-    groups[0].branches[0]
+    branches.length > 0 && branches[0].branches.length > 0
+      ? branches[0].branches[0]
+      : { label: '', value: '' } // Default to an empty object if branches is empty
   );
+  console.log(branches);
+
+
+
+
+  const { data: branchData, loading: branchLoading } = useQuery(queryBranchList)
+
+  useEffect(() => {
+    if (branchData) {
+      // Create a new array to store branches in the format of groups
+      const formattedBranches = [];
+  
+      // Push main branch into formattedBranches
+      formattedBranches.push({
+        label: "Main Branch",
+        branches: branchData.branches.filter(
+          (branch: BranchForm) => branch.isHeadOfficeBranch === true
+        ).map((branch: BranchForm) => ({
+          label: branch.branchName,
+          value: branch.branchId,
+        })),
+      });
+  
+      // Push remaining branches into formattedBranches
+      formattedBranches.push({
+        label: "Branches",
+        branches: branchData.branches.filter(
+          (branch: BranchForm) =>
+            branch.isHeadOfficeBranch === false
+        ).map((branch: BranchForm) => ({
+          label: branch.branchName,
+          value: branch.branchId,
+        })),
+      });
+  
+      // Set the formatted branches
+      setBranches(formattedBranches);
+    }
+  }, [branchData, branchLoading]);
+
+  useEffect(() => {
+    if (branches.length > 0) {
+      // Check if the first group has branches
+      const firstGroupBranches = branches[0].branches;
+      if (firstGroupBranches.length > 0) {
+        // Set the first branch of the first group as the selected branch
+        setSelectedBranch(firstGroupBranches[0]);
+      }
+    }
+  }, [branches]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -85,7 +125,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           <CommandList>
             <CommandInput placeholder="Search branch..." />
             <CommandEmpty>No branch found.</CommandEmpty>
-            {groups.map((group) => (
+            {branches.map((group) => (
               <CommandGroup key={group.label} heading={group.label}>
                 {group.branches.map((branch) => (
                   <CommandItem
