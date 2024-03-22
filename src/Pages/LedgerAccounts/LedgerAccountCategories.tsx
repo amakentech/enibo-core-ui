@@ -49,7 +49,7 @@ const LedgerAccountCategories: FC<LedgerAccountCategoriesProps> = () => {
 
   const handleCopy = (selectedRows: Row<LedgerCategory>[]) => {
     localStorage.setItem(
-      "transactionType",
+      "ledgerCategory",
       JSON.stringify(selectedRows[0].original)
     );
     navigate(
