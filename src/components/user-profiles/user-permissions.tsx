@@ -51,7 +51,7 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
   const [tab, setTab] = useState(0);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [modules, setModules] = useState([
+  const [modules] = useState([
     {
       moduleName: "Branch Management",
       subModules: ["Branches", "Branch Types"],
