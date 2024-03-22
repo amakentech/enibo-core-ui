@@ -747,7 +747,7 @@ const NewBranchForm: FC<NewBranchFormProps> = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {branches
-                            .filter((branch) => !branch.isHeadOfficeBranch) // Filter out branches where isHeadOfficeBranch is false
+                            .filter((branch) => branch.isHeadOfficeBranch) // Filter out branches where isHeadOfficeBranch is false
                             .map((branch) => (
                               <SelectItem
                                 key={branch.branchId}
