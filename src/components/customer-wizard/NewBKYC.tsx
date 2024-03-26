@@ -24,6 +24,7 @@ import { CREATE_BUSINESS_KYC } from "@/types/mutations";
 import queryKycTypesList from "@/components/kyc-type-list/query";
 import { useAppState } from "@/store/state";
 import { KYCType } from "@/types/global";
+import CountrySelector from "../countries/country-selector";
 
 const newKYCBusinessSchema = z.object({
   kycType: z.string().min(3, { message: "KYC Type is required" }),
@@ -69,7 +70,7 @@ interface NewBKYCProps {
   listType: string;
 }
 
-const NewBKYC: FC<NewBKYCProps> = ({listType}) => {
+const NewBKYC: FC<NewBKYCProps> = ({ listType }) => {
   const { appState, setAppState } = useAppState();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
@@ -88,7 +89,7 @@ const NewBKYC: FC<NewBKYCProps> = ({listType}) => {
   });
   const onSubmit = async (data: NewKYCBusinessInput) => {
     const input = {
-      kycType: data.kycType, 
+      kycType: data.kycType,
       legalEntityName: data.legalEntityName,
       legalStatus: data.legalStatus,
       dateOfIncorporation: data.dateOfIncorporation,
@@ -112,16 +113,17 @@ const NewBKYC: FC<NewBKYCProps> = ({listType}) => {
     console.log(response.data.createBusinessKYC);
     const individualData = {
       kycId: response.data.createBusinessKYC.businessKYCId,
+      name: data.legalEntityName,
       createdBy: user.id,
       kycType: response.data.createBusinessKYC.kycType,
       status: "Pending",
-    }
-    if(listType === "accountOwners"){
+    };
+    if (listType === "accountOwners") {
       setAppState({
         ...appState,
         legalEntityName: data.legalEntityName,
-        accountOwners: [...appState.accountOwners, individualData]
-      })
+        accountOwners: [...appState.accountOwners, individualData],
+      });
     } else {
       setOpen(false);
     }
@@ -138,40 +140,39 @@ const NewBKYC: FC<NewBKYCProps> = ({listType}) => {
   } = useQuery(queryKycTypesList);
 
   const nextFormStep = () => {
-    setStep(cur => cur + 1);
-}
-const prevFormStep = () => {
-    setStep(cur => cur - 1);
-}
-const stepButtons = () => {
-  if (step === 0) {
-    return (
-      <div className="flex justify-end mt-4">
-        <Button onClick={nextFormStep}>Next</Button>
-      </div>
-    )
-  }
-  if (step === 3) {
+    setStep((cur) => cur + 1);
+  };
+  const prevFormStep = () => {
+    setStep((cur) => cur - 1);
+  };
+  const stepButtons = () => {
+    if (step === 0) {
+      return (
+        <div className="flex justify-end mt-4">
+          <Button onClick={nextFormStep}>Next</Button>
+        </div>
+      );
+    }
+    if (step === 3) {
+      return (
+        <div className="flex justify-between mt-4">
+          <Button onClick={prevFormStep}>Previous</Button>
+          <div>
+            <Button type="submit">Submit</Button>
+            <Button className="ml-2" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex justify-between mt-4">
         <Button onClick={prevFormStep}>Previous</Button>
-        <div>
-        <Button type="submit">Submit</Button>
-        <Button 
-        className="ml-2"
-        onClick={() => setOpen(false)}
-        >Cancel</Button>
-        </div>
+        <Button onClick={nextFormStep}>Next</Button>
       </div>
-    )
-  }
-  return (
-    <div className="flex justify-between mt-4">
-      <Button onClick={prevFormStep}>Previous</Button>
-      <Button onClick={nextFormStep}>Next</Button>
-    </div>
-  )
-}
+    );
+  };
 
   useEffect(() => {
     if (data) {
@@ -190,316 +191,338 @@ const stepButtons = () => {
           <section>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="flex flex-col">
-              {step === 0 && (
-                <>
-                <div className="flex flex-col gap-4 border border-b-0">
-                  <div className="p-4">
-                    <h3>BUSINESS DETAILS</h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
-                    <div>
-                      <Label htmlFor="kycType">KYC Type</Label>
-                      <Controller
-                        control={control}
-                        name="kycType"
-                        render={({ field: { onChange, value } }) => (
-                          <Select onValueChange={onChange} value={value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select KYC Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {KYCTypes.map((type) => (
-                                <SelectItem
-                                  key={type.kycTypeId}
-                                  value={type.kycTypeId}
-                                >
-                                  {type.kycTypeName}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="legalEntityName">Legal Entity Name</Label>
-                      <Input
-                        id="legalEntityName"
-                        type="text"
-                        {...register("legalEntityName", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.legalEntityName && (
-                        <div className="text-red-500">
-                          {errors.legalEntityName.message}
+                {step === 0 && (
+                  <>
+                    <div className="flex flex-col gap-4 border border-b-0">
+                      <div className="p-4">
+                        <h3>BUSINESS DETAILS</h3>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
+                        <div>
+                          <Label htmlFor="kycType">KYC Type</Label>
+                          <Controller
+                            control={control}
+                            name="kycType"
+                            render={({ field: { onChange, value } }) => (
+                              <Select onValueChange={onChange} value={value}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select KYC Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {KYCTypes.map((type) => (
+                                    <SelectItem
+                                      key={type.kycTypeId}
+                                      value={type.kycTypeId}
+                                    >
+                                      {type.kycTypeName}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="legalStatus">Legal Status</Label>
-                      <Controller
-                        control={control}
-                        name="legalStatus"
-                        render={({ field: { onChange, value } }) => (
-                          <Select onValueChange={onChange} value={value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select legal status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Sole Proprietor">
-                                Sole Proprietor
-                              </SelectItem>
-                              <SelectItem value="Partnership">
-                                Partnership
-                              </SelectItem>
-                              <SelectItem value="Limited Company">
-                                Limited Company
-                              </SelectItem>
-                              <SelectItem value="Government Entity">
-                                Government Entity
-                              </SelectItem>
-                              <SelectItem value="Society/Association/Club/Trust">
-                                Society/Association/Club/Trust
-                              </SelectItem>
-                              <SelectItem value="NGO/International Charity">
-                                NGO/International Charity
-                              </SelectItem>
-                              <SelectItem value="Other (specify)">
-                                Other (specify)
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {errors.legalStatus && (
-                        <div className="text-red-500">
-                          {errors.legalStatus.message}
+                        <div>
+                          <Label htmlFor="legalEntityName">
+                            Legal Entity Name
+                          </Label>
+                          <Input
+                            id="legalEntityName"
+                            type="text"
+                            {...register("legalEntityName", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.legalEntityName && (
+                            <div className="text-red-500">
+                              {errors.legalEntityName.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="dateOfIncorporation">
-                        Date of Incorporation
-                      </Label>
-                      <Input
-                        id="dateOfIncorporation"
-                        type="date"
-                        {...register("dateOfIncorporation", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.dateOfIncorporation && (
-                        <div className="text-red-500">
-                          {errors.dateOfIncorporation.message}
+                        <div>
+                          <Label htmlFor="legalStatus">Legal Status</Label>
+                          <Controller
+                            control={control}
+                            name="legalStatus"
+                            render={({ field: { onChange, value } }) => (
+                              <Select onValueChange={onChange} value={value}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select legal status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Sole Proprietor">
+                                    Sole Proprietor
+                                  </SelectItem>
+                                  <SelectItem value="Partnership">
+                                    Partnership
+                                  </SelectItem>
+                                  <SelectItem value="Limited Company">
+                                    Limited Company
+                                  </SelectItem>
+                                  <SelectItem value="Government Entity">
+                                    Government Entity
+                                  </SelectItem>
+                                  <SelectItem value="Society/Association/Club/Trust">
+                                    Society/Association/Club/Trust
+                                  </SelectItem>
+                                  <SelectItem value="NGO/International Charity">
+                                    NGO/International Charity
+                                  </SelectItem>
+                                  <SelectItem value="Other (specify)">
+                                    Other (specify)
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.legalStatus && (
+                            <div className="text-red-500">
+                              {errors.legalStatus.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                        <div>
+                          <Label htmlFor="dateOfIncorporation">
+                            Date of Incorporation
+                          </Label>
+                          <Input
+                            id="dateOfIncorporation"
+                            type="date"
+                            {...register("dateOfIncorporation", {
+                              required: true,
+                            })}
+                            className="mt-1"
+                          />
+                          {errors.dateOfIncorporation && (
+                            <div className="text-red-500">
+                              {errors.dateOfIncorporation.message}
+                            </div>
+                          )}
+                        </div>
 
-                    <div>
-                      <Label htmlFor="natureOfBusiness">
-                        Nature of Business
-                      </Label>
-                      <Input
-                        id="natureOfBusiness"
-                        type="text"
-                        {...register("natureOfBusiness", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.natureOfBusiness && (
-                        <div className="text-red-500">
-                          {errors.natureOfBusiness.message}
+                        <div>
+                          <Label htmlFor="natureOfBusiness">
+                            Nature of Business
+                          </Label>
+                          <Input
+                            id="natureOfBusiness"
+                            type="text"
+                            {...register("natureOfBusiness", {
+                              required: true,
+                            })}
+                            className="mt-1"
+                          />
+                          {errors.natureOfBusiness && (
+                            <div className="text-red-500">
+                              {errors.natureOfBusiness.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="emailAddress">Email Address</Label>
-                      <Input
-                        id="emailAddress"
-                        type="text"
-                        {...register("emailAddress", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.emailAddress && (
-                        <div className="text-red-500">
-                          {errors.emailAddress.message}
+                        <div>
+                          <Label htmlFor="emailAddress">Email Address</Label>
+                          <Input
+                            id="emailAddress"
+                            type="text"
+                            {...register("emailAddress", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.emailAddress && (
+                            <div className="text-red-500">
+                              {errors.emailAddress.message}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-                </>
+                  </>
                 )}
                 {step === 1 && (
-                <>
-                <div className="flex flex-col gap-4 border border-b-0 ">
-                  <div className="p-4">
-                    <h3>LOCATION DETAILS</h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
-                    <div>
-                      <Label htmlFor="postalAddress">Postal Address</Label>
-                      <Input
-                        id="postalAddress"
-                        type="text"
-                        {...register("postalAddress", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.postalAddress && (
-                        <div className="text-red-500">
-                          {errors.postalAddress.message}
+                  <>
+                    <div className="flex flex-col gap-4 border border-b-0 ">
+                      <div className="p-4">
+                        <h3>LOCATION DETAILS</h3>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
+                        <div>
+                          <Label htmlFor="postalAddress">Postal Address</Label>
+                          <Input
+                            id="postalAddress"
+                            type="text"
+                            {...register("postalAddress", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.postalAddress && (
+                            <div className="text-red-500">
+                              {errors.postalAddress.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="physicalAddress">Physical Address</Label>
-                      <Input
-                        id="physicalAddress"
-                        type="text"
-                        {...register("physicalAddress", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.physicalAddress && (
-                        <div className="text-red-500">
-                          {errors.physicalAddress.message}
+                        <div>
+                          <Label htmlFor="physicalAddress">
+                            Physical Address
+                          </Label>
+                          <Input
+                            id="physicalAddress"
+                            type="text"
+                            {...register("physicalAddress", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.physicalAddress && (
+                            <div className="text-red-500">
+                              {errors.physicalAddress.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="entityNationality">
-                        Entity Nationality
-                      </Label>
-                      <Input
-                        id="entityNationality"
-                        type="text"
-                        {...register("entityNationality", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.entityNationality && (
-                        <div className="text-red-500">
-                          {errors.entityNationality.message}
+                        <div>
+                          <Label htmlFor="entityNationality">
+                            Entity Nationality
+                          </Label>
+                          <CountrySelector
+                            control={control}
+                            name="entityNationality"
+                          />
+                          {errors.entityNationality && (
+                            <div className="text-red-500">
+                              {errors.entityNationality.message}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-                </>
+                  </>
                 )}
                 {step === 2 && (
-                <>
-                <div className="flex flex-col gap-4 border border-b-red-50">
-                  <div className="p-4">
-                    <h3>IDENTIFICATION DETAILS</h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
-                    <div>
-                      <Label htmlFor="registrationNumber">
-                        Registration Number
-                      </Label>
-                      <Input
-                        id="registrationNumber"
-                        type="text"
-                        {...register("registrationNumber", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.registrationNumber && (
-                        <div className="text-red-500">
-                          {errors.registrationNumber.message}
+                  <>
+                    <div className="flex flex-col gap-4 border border-b-red-50">
+                      <div className="p-4">
+                        <h3>IDENTIFICATION DETAILS</h3>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4 ">
+                        <div>
+                          <Label htmlFor="registrationNumber">
+                            Registration Number
+                          </Label>
+                          <Input
+                            id="registrationNumber"
+                            type="text"
+                            {...register("registrationNumber", {
+                              required: true,
+                            })}
+                            className="mt-1"
+                          />
+                          {errors.registrationNumber && (
+                            <div className="text-red-500">
+                              {errors.registrationNumber.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="entityPINNumber">Entity PIN Number</Label>
-                      <Input
-                        id="entityPINNumber"
-                        type="text"
-                        {...register("entityPINNumber", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.entityPINNumber && (
-                        <div className="text-red-500">
-                          {errors.entityPINNumber.message}
+                        <div>
+                          <Label htmlFor="entityPINNumber">
+                            Entity PIN Number
+                          </Label>
+                          <Input
+                            id="entityPINNumber"
+                            type="text"
+                            {...register("entityPINNumber", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.entityPINNumber && (
+                            <div className="text-red-500">
+                              {errors.entityPINNumber.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="entityTaxNumber">Entity Tax Number</Label>
-                      <Input
-                        id="entityTaxNumber"
-                        type="text"
-                        {...register("entityTaxNumber", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.entityTaxNumber && (
-                        <div className="text-red-500">
-                          {errors.entityTaxNumber.message}
+                        <div>
+                          <Label htmlFor="entityTaxNumber">
+                            Entity Tax Number
+                          </Label>
+                          <Input
+                            id="entityTaxNumber"
+                            type="text"
+                            {...register("entityTaxNumber", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.entityTaxNumber && (
+                            <div className="text-red-500">
+                              {errors.entityTaxNumber.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="telephoneNumber">Telephone Number</Label>
-                      <Input
-                        id="telephoneNumber"
-                        type="text"
-                        {...register("telephoneNumber", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.telephoneNumber && (
-                        <div className="text-red-500">
-                          {errors.telephoneNumber.message}
+                        <div>
+                          <Label htmlFor="telephoneNumber">
+                            Telephone Number
+                          </Label>
+                          <Input
+                            id="telephoneNumber"
+                            type="text"
+                            {...register("telephoneNumber", { required: true })}
+                            className="mt-1"
+                          />
+                          {errors.telephoneNumber && (
+                            <div className="text-red-500">
+                              {errors.telephoneNumber.message}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="riskRating">Risk Rating</Label>
-                      <Input
-                        id="riskRating"
-                        type="text"
-                        {...register("riskRating", { required: true })}
-                        className="mt-1"
-                      />
-                      {errors.riskRating && (
-                        <div className="text-red-500">
-                          {errors.riskRating.message}
+                        <div>
+                          <Label htmlFor="riskRating">Risk Rating</Label>
+                          <Controller
+                            control={control}
+                            name="riskRating"
+                            render={({ field: { onChange, value } }) => (
+                              <Select value={value} onValueChange={onChange}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select ..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Low">Low</SelectItem>
+                                  <SelectItem value="Medium">Medium</SelectItem>
+                                  <SelectItem value="High">High</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.riskRating && (
+                            <div className="text-red-500">
+                              {errors.riskRating.message}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-                </>
+                  </>
                 )}
                 {step === 3 && (
-                <>
-                <div className="flex flex-col gap-4 border">
-                  {/* TODO: add custom file upload */}
-                  <div className="p-4">
-                    <h3>ATTACHMENT DETAILS</h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4">
-                    <div>
-                      <Label htmlFor="attachDocumentsField">
-                        Attach Documents
-                      </Label>
-                      <Input
-                        id="attachDocumentsField"
-                        type="text"
-                        {...register("attachDocumentsField", {
-                          required: true,
-                        })}
-                        className="mt-1"
-                      />
-                      {errors.attachDocumentsField && (
-                        <div className="text-red-500">
-                          {errors.attachDocumentsField.message}
+                  <>
+                    <div className="flex flex-col gap-4 border">
+                      {/* TODO: add custom file upload */}
+                      <div className="p-4">
+                        <h3>ATTACHMENT DETAILS</h3>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mx-4 mb-8 -mt-4">
+                        <div>
+                          <Label htmlFor="attachDocumentsField">
+                            Attach Documents
+                          </Label>
+                          <Input
+                            id="attachDocumentsField"
+                            type="text"
+                            {...register("attachDocumentsField", {
+                              required: true,
+                            })}
+                            className="mt-1"
+                          />
+                          {errors.attachDocumentsField && (
+                            <div className="text-red-500">
+                              {errors.attachDocumentsField.message}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-                </>
+                  </>
                 )}
               </div>
-              {
-                stepButtons()
-              }
+              {stepButtons()}
             </form>
           </section>
         </DialogContent>

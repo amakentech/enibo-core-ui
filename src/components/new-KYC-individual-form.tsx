@@ -22,6 +22,7 @@ import {
 import queryKycTypesList from "./kyc-type-list/query";
 import { KYCType } from "@/types/global";
 import { queryIndividualKYC } from "@/types/queries";
+import CountrySelector from "./countries/country-selector";
 
 const newKYCIndividualSchema = z.object({
   kycType: z.string().min(3, { message: "KYC Type is required" }),
@@ -66,20 +67,19 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
   const navigate = useNavigate();
   const [updateIndividualKyc] = useMutation(UPDATE_INDIVIDUAL_KYC);
   const [KYCTypes, setKycsTypes] = useState<KYCType[]>([]);
-    
+
   const {
     data,
     loading: queryLoading,
     error: queryError,
   } = useQuery(queryKycTypesList);
-  
+
   const { data: individualKYCData } = useQuery(queryIndividualKYC, {
     variables: {
       individualKycId: IndividualKYCId,
     },
   });
 
-  
   useEffect(() => {
     if (data) {
       setKycsTypes(data.kycTypes);
@@ -95,7 +95,6 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
   } = useForm<NewKYCIndividualInput>({
     resolver: zodResolver(newKYCIndividualSchema),
   });
-
 
   const handleCreate = (data: NewKYCIndividualInput) => {
     const formInput = {
@@ -134,7 +133,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
   };
 
   const handleEdit = (data: NewKYCIndividualInput) => {
-    console.log(data)
+    console.log(data);
     const formInput = {
       individualKycId: IndividualKYCId,
       kycType: data.kycType, //TODO: get kyc type id from context
@@ -448,12 +447,7 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
               </div>
               <div>
                 <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  type="text"
-                  {...register("country")}
-                  className="mt-1"
-                />
+                <CountrySelector control={control} name="country" />
                 {errors.country && (
                   <div className="text-red-500">{errors.country.message}</div>
                 )}
@@ -550,11 +544,21 @@ const NewKYCIndividualForm: FC<NewKYCIndividualFormProps> = () => {
               </div>
               <div>
                 <Label htmlFor="riskRating">Risk Rating</Label>
-                <Input
-                  id="riskRating"
-                  type="text"
-                  {...register("riskRating")}
-                  className="mt-1"
+                <Controller
+                  control={control}
+                  name="riskRating"
+                  render={({ field: { onChange, value } }) => (
+                    <Select value={value} onValueChange={onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select ..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.riskRating && (
                   <div className="text-red-500">

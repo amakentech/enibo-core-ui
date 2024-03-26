@@ -140,7 +140,7 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
               <Table className="border">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>KYC ID</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>KYC Type</TableHead>
                     <TableHead>Status</TableHead>
@@ -150,7 +150,7 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
                 <TableBody>
                   {accountOwners?.map((individual, index) => (
                     <TableRow key={individual.kycId}>
-                      <TableCell>{individual.kycId}</TableCell>
+                      <TableCell>{individual.name}</TableCell>
                       <TableCell>{individual.createdBy}</TableCell>
                       <TableCell>{individual.kycType}</TableCell>
                       <TableCell>{individual.status}</TableCell>
@@ -184,7 +184,7 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
               <Table className="border">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>KYC ID</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>KYC Type</TableHead>
                     <TableHead>Status</TableHead>
@@ -194,7 +194,7 @@ const CustomerKYC: FC<CustomerKYCProps> = () => {
                 <TableBody>
                   {otherKYCs?.map((individual, index) => (
                     <TableRow key={individual.kycId}>
-                      <TableCell>{individual.kycId}</TableCell>
+                      <TableCell>{individual.name}</TableCell>
                       <TableCell>{individual.createdBy}</TableCell>
                       <TableCell>{individual.kycType}</TableCell>
                       <TableCell>{individual.status}</TableCell>

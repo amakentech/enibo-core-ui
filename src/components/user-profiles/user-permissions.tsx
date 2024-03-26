@@ -30,6 +30,7 @@ import { queryUserProfile } from "@/types/queries";
 const UserPermissionSchema = z.object({
   name: z.string().min(3, { message: "Profile Name is required" }),
   description: z.string().min(3, { message: "Description is required" }),
+  module: z.string().nonempty({ message: "Please select a module" }),
   permissions: z
     .array(z.string())
     .nonempty({ message: "Please select permissions" }),
@@ -102,22 +103,23 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
     handleSubmit,
     register,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<UserPermissionsInput>({
     resolver: zodResolver(UserPermissionSchema),
   });
 
-  const toggleModuleCheckbox = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
-    const isChecked = e.target.checked;
-    const checkedValue = e.target.value;
-    // Update permissions for the selected module and its submodules
-    console.log("isChecked", isChecked, "checkedValue", checkedValue, name);
-    if (isChecked) {
-      setSelectedModules([...selectedModules, name]);
-    } else {
-      setSelectedModules(selectedModules.filter((module) => module !== name));
-    }
+  const isModuleChecked = (name: string) => {
+     const isChecked = selectedModules.includes(name);
+     if (isChecked) {
+       watch("module")
+       setSelectedModules([...selectedModules, name]);
+       return true;
+     }
+      return false;
   };
+ console.log(isModuleChecked)
+
 
 
   const { data } = useQuery(queryUserProfile, {
@@ -292,13 +294,10 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
                           <TableCell className="flex items-center w-[70%] gap-2">
                             <input
                               type="checkbox"
-                              {...register("permissions", {
-                                required: "Please select permissions",
+                              {...register("module", {
+                                required: "Please select module",
                               })}
                               value={module.moduleName}
-                              onChange={(e) =>
-                                toggleModuleCheckbox(e, module.moduleName)
-                              }
                             />
                             <CollapsibleTrigger asChild>
                               <Button variant="ghost" size="icon">
@@ -313,6 +312,7 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
                               {...register("permissions", {
                                 required: "Please select permissions",
                               })}
+                              
                               value="view"
                             />
                           </TableCell>
@@ -322,6 +322,7 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
                               {...register("permissions", {
                                 required: "Please select permissions",
                               })}
+                              
                               value="create"
                             />
                           </TableCell>
@@ -331,6 +332,7 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
                               {...register("permissions", {
                                 required: "Please select permissions",
                               })}
+                              
                               value="edit"
                             />
                           </TableCell>
@@ -340,6 +342,7 @@ const UserPermissions: FC<UserPermissionsProps> = () => {
                               {...register("permissions", {
                                 required: "Please select permissions",
                               })}
+                              
                               value="delete"
                             />
                           </TableCell>

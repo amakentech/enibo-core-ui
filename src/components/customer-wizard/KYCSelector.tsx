@@ -80,6 +80,7 @@ interface KYCSelectorProps {
 
 const KYCSelector: FC<KYCSelectorProps> = ({ listType }) => {
   const { appState, setAppState } = useAppState();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { data, loading, error } = useQuery(queryKycList);
   const { data: businessKycData } = useQuery(queryBusinessKYCs);
   const [selected, setSelected] = useState<IndividualKYC | undefined>();
@@ -94,7 +95,8 @@ const KYCSelector: FC<KYCSelectorProps> = ({ listType }) => {
     if (listType === "accountOwners" && appState.customerType === "retail") {
       const inputData = {
         kycId: selected && selected.IndividualKYCId,
-        createdBy: "John Doe",
+        name: `${selected?.firstName} ${selected?.lastName}`,
+        createdBy: user.username,
         kycType: selected?.kycType,
         status: "Pending",
       };
@@ -120,7 +122,8 @@ const KYCSelector: FC<KYCSelectorProps> = ({ listType }) => {
     } else if (listType === "accountOwners" && appState.customerType === "business") {
       const inputData = {
         kycId: selectedBusiness && selectedBusiness.businessKYCId,
-        createdBy: "John Doe",
+        name: selectedBusiness?.legalEntityName,
+        createdBy: user.username,
         kycType: selectedBusiness?.kycType,
         status: "Pending",
       };
@@ -149,7 +152,8 @@ const KYCSelector: FC<KYCSelectorProps> = ({ listType }) => {
       //should be individual
       const inputData = {
         kycId: selected && selected.IndividualKYCId,
-        createdBy: "John Doe",
+        name: `${selected?.firstName} ${selected?.lastName}`,
+        createdBy: user.username,
         kycType: selected?.kycType,
         status: "Pending",
       };

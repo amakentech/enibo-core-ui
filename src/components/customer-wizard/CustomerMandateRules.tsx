@@ -25,16 +25,16 @@ const businessRetailSchema = z.object({
       signingRule: z.string().min(3, { message: "Signing Rule is required" }),
       signingMandateType: z
         .string()
-        .min(3, { message: "Signing Mandate Type is required" }),
+        .min(1, { message: "Signing Mandate Type is required" }),
       minimumPaymentAmount: z
         .string()
-        .min(3, { message: "Minimum Payment Amount is required" }),
+        .min(1, { message: "Minimum Payment Amount is required" }),
       maximumPaymentAmount: z
         .string()
-        .min(3, { message: "Maximum Payment Amount is required" }),
+        .min(1, { message: "Maximum Payment Amount is required" }),
       maximumDailyLimit: z
         .string()
-        .min(3, { message: "Maximum Daily Limit is required" }),
+        .min(1, { message: "Maximum Daily Limit is required" }),
     })
   ),
 });

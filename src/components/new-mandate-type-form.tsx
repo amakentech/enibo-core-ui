@@ -28,6 +28,7 @@ interface NewMandateTypeFormProps {}
 
 const NewMandateTypeForm: FC<NewMandateTypeFormProps> = () => {
   const { toast } = useToast();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { mandateTypeId } = useParams<{ mandateTypeId: string }>();
   const isEditMode = mandateTypeId ? true : false;
   const storedMandateType = localStorage.getItem("mandateType");
@@ -66,7 +67,7 @@ const NewMandateTypeForm: FC<NewMandateTypeFormProps> = () => {
         mandateTypeDescription: data.mandateTypeDescription,
         mandateTypeCode: data.mandateTypeCode,
         mandateTypeName: data.mandateTypeName,
-        modifiedBy: data.modifiedBy,
+        modifiedBy: user.id,
         modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
            .toISOString()
         .split(".")[0],
@@ -121,7 +122,7 @@ const NewMandateTypeForm: FC<NewMandateTypeFormProps> = () => {
         mandateTypeName: data.mandateTypeName,
         mandateTypeDescription: data.mandateTypeDescription,
         mandateTypeCode: data.mandateTypeCode,
-        modifiedBy: data.modifiedBy,
+        modifiedBy: user.id,
         modifiedOn: new Date(new Date().toString().split("GMT")[0] + " UTC")
               .toISOString()
             .split(".")[0],

@@ -21,6 +21,7 @@ import { CREATE_BUSINESS_KYC } from "@/types/mutations";
 
 import queryKycTypesList from "./kyc-type-list/query";
 import { queryBusinessKYC } from "@/types/queries";
+import CountrySelector from "./countries/country-selector";
 
 const newKYCBusinessSchema = z.object({
   kycType: z.string().min(3, { message: "KYC Type is required" }),
@@ -121,6 +122,7 @@ const NewKYCBusinessForm: FC<NewKYCBusinessFormProps> = () => {
   const { data: businessKycData } = useQuery(queryBusinessKYC, {
     variables: { businessKycId: businessKYCId },
   });
+
 
   useEffect(() => {
     if (data) {
@@ -399,12 +401,7 @@ const NewKYCBusinessForm: FC<NewKYCBusinessFormProps> = () => {
               </div>
               <div>
                 <Label htmlFor="entityNationality">Entity Nationality</Label>
-                <Input
-                  id="entityNationality"
-                  type="text"
-                  {...register("entityNationality", { required: true })}
-                  className="mt-1"
-                />
+                <CountrySelector control={control} name="entityNationality" />
                 {errors.entityNationality && (
                   <div className="text-red-500">
                     {errors.entityNationality.message}
@@ -476,12 +473,22 @@ const NewKYCBusinessForm: FC<NewKYCBusinessFormProps> = () => {
               </div>
               <div>
                 <Label htmlFor="riskRating">Risk Rating</Label>
-                <Input
-                  id="riskRating"
-                  type="text"
-                  {...register("riskRating", { required: true })}
-                  className="mt-1"
-                />
+                <Controller
+              control={control}
+              name="riskRating"
+              render={({ field: { onChange, value } }) => (
+                <Select value={value} onValueChange={onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select ..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
                 {errors.riskRating && (
                   <div className="text-red-500">
                     {errors.riskRating.message}
