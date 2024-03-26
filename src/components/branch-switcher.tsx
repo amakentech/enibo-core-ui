@@ -40,6 +40,7 @@ interface TeamSwitcherProps extends PopoverTriggerProps {
 }
 
 export default function TeamSwitcher({ className }: TeamSwitcherProps) {
+
   const [open, setOpen] = React.useState(false);
   const [branches, setBranches] = React.useState<Group[]>([]);
   const [selectedBranch, setSelectedBranch] = React.useState<Branch>(
@@ -47,7 +48,6 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
       ? branches[0].branches[0]
       : { label: '', value: '' } // Default to an empty object if branches is empty
   );
-  console.log(branches);
 
 
 

@@ -46,7 +46,8 @@ const Customers: FC<CustomersProps> = () => {
     if(selectedRows[0].original.customerType === "retail") {
       const individualData = {
         kycId: selectedRows[0].original.retail?.individualKYC?.IndividualKYCId,
-        createdBy: "John Doe",
+        name: selectedRows[0].original.retail?.firstName + " " + selectedRows[0].original.retail?.lastName,
+        createdBy: selectedRows[0].original.modifiedBy,
         kycType: selectedRows[0].original.retail?.individualKYC?.kycType,
         status: "Active",
       }
@@ -65,14 +66,16 @@ const Customers: FC<CustomersProps> = () => {
     } else {
       const businessData = {
         kycId: selectedRows[0].original.business?.businessKYC?.businessKYCId,
-        createdBy: "John Doe",
+        name: selectedRows[0].original.business?.legalEntityName,
+        createdBy: selectedRows[0].original.modifiedBy,
         kycType: selectedRows[0].original.business?.businessKYC?.kycType,
         status: "Active",
       }
 
       const directorsData = {
         kycId: selectedRows[0].original.business?.directorsKYC?.IndividualKYCId,
-        createdBy: "John Doe",
+        name: selectedRows[0].original.business?.legalEntityName,
+        createdBy: selectedRows[0].original.modifiedBy,
         kycType: selectedRows[0].original.business?.directorsKYC?.kycType,
         status: "Active",
       }

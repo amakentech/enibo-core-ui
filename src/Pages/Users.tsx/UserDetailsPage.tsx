@@ -33,7 +33,7 @@ const Users: FC<UsersProps> = () => {
     refetch,
   } = useQuery(queryUsersList);
   const handleEdit = (selectedRows: Row<UserDetailsType>[]) => {
-    navigate(`/administration/user-details/${selectedRows[0].id}`);
+    navigate(`/administration/user-details/${selectedRows[0].original.id}`);
   };
 
   const handleCopy = (selectedRows: Row<UserDetailsType>[]) => {

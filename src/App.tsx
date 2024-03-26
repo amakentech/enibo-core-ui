@@ -45,17 +45,17 @@ import AppSettingsList from "./Pages/AppSettings/AppSettingsList";
 import AppSettingsDetails from "./Pages/AppSettings/AppSettingsDetails";
 import NewKYCIndividualForm from "./components/new-KYC-individual-form";
 import NewKYCBusinessForm from "./components/new-KYC-business-form";
-import Signup from "./Pages/SignUp/SignUp";
 import BranchType from "./Pages/Branches/BranchTypes";
 import NewTransfer from "./Pages/Transfer/NewTransfer";
 import Wizard from "./components/customer-wizard";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
   return (
     <ThemeProvider>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route element={<ProtectedRoute />}>
         <Route
           path="/dashboard"
           element={
@@ -545,7 +545,7 @@ function App() {
             </MainLayout>
           }
         />
-        
+        </Route>
       </Routes>
     </ThemeProvider>
   );

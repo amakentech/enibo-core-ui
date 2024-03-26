@@ -32,12 +32,14 @@ interface AppState {
   retail: string;
   accountOwners: {
     kycId: string | undefined;
+    name: string | undefined;
     createdBy: string | undefined;
     kycType: string | undefined;
     status: string | undefined;
   }[];
   otherKYCs: {
     kycId: string | undefined;
+    name: string | undefined;
     createdBy: string | undefined;
     kycType: string | undefined;
     status: string | undefined;

@@ -14,6 +14,8 @@ import { queryUser, queryUserProfiles } from "@/types/queries";
 import { useQuery } from "@apollo/client";
 import { UserProfile } from "@/Pages/Users.tsx/UserProfileList";
 import { UPDATE_USER } from "@/types/mutations";
+import queryBranchList from "../branch-list/query";
+import { BranchForm } from "@/types/global";
 
 const isEmailExists = (email: string) => {
   const existingEmails = ["example@example.com", "test@test.com"];
@@ -40,7 +42,14 @@ export const userDetailsSchema = z.object({
   lastName: z.string().min(3, { message: "Last Name is required" }),
   phoneNumber: z.string().min(3, { message: "Phone Number is required" }),
   employeeNumber: z.string().min(3, { message: "Employee Number is required" }),
-  branch: z.string().min(3, { message: "Branch is required" }),
+  branch: z
+    .array(
+      z.object({
+        label: z.string(),
+        value: z.string(),
+      })
+    )
+    ,
   profile: z
     .array(
       z.object({
@@ -54,6 +63,9 @@ export const userDetailsSchema = z.object({
     .min(3, { message: "Document Attachment is required" }),
   modifiedBy: z.string().min(3, { message: "Modified By is required" }),
   modifiedOn: z.string().min(3, { message: "Modified On is required" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 type UserDetailsInput = z.infer<typeof userDetailsSchema>;
@@ -70,8 +82,22 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
   // if there is id, it means we are in create mode
   const isEditMode = id ? true : false;
   const { toast } = useToast();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [userProfiles, setUserProfiles] = useState<OptionType[]>([]);
+  const [branchList, setBranchList] = useState<OptionType[]>([]);
+  const { data: branchData, loading: branchLoading } =
+    useQuery(queryBranchList);
+
+  useEffect(() => {
+    if (branchData) {
+      const newBranches = branchData.branches.map((branch: BranchForm) => {
+        return {
+          label: branch.branchName,
+          value: branch.branchId,
+        };
+      });
+      setBranchList([...newBranches]);
+    }
+  }, [branchData, branchLoading]);
 
   const navigate = useNavigate();
   const {
@@ -94,13 +120,8 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
   });
 
   const [signUpMutation] = useMutation(SIGNUP_MUTATION);
-  const [updateUser] = useMutation(UPDATE_USER)
+  const [updateUser] = useMutation(UPDATE_USER);
   const handleCreate = async (data: UserDetailsInput) => {
-    
-    if (data.password !== data.confirmPassword) {
-      setErrorMessage("Passwords do not match");
-      return;
-    }
     try {
       const result = await signUpMutation({
         variables: {
@@ -113,7 +134,7 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
           employeeNumber: data.employeeNumber,
-          branch: data.branch,
+          branch: data.branch[0].value,
           profile: data.profile[0].value,
           documentAttachment: data.documentAttachment,
           modifiedBy: data.modifiedBy,
@@ -138,39 +159,40 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
         ),
       });
       reset();
-      localStorage.removeItem("copyUser");  
+      localStorage.removeItem("copyUser");
       navigate("/administration/user-details");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      const errorMessage = error.graphQLErrors?.[0]?.extensions?.response?.body?.message || "Unknown error";
+      const errorMessage =
+        error.graphQLErrors?.[0]?.extensions?.response?.body?.message || error.graphQLErrors?.[0].message ||"Unknown error";
       toast({
         title: "Error",
         description: `"Failed ${errorMessage}. Please try again."`,
       });
     }
-  }
+  };
 
   const handleEdit = async (data: UserDetailsInput) => {
     try {
       const result = await updateUser({
-         variables: {
+        variables: {
           updateUserId: userData.user.id,
           email: data.email,
           password: data.password,
-          confirmPassword: data.confirmPassword,
+          confirmPassword: data.password,
           username: data.username,
           firstName: data.firstName,
           middleName: data.middleName,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
           employeeNumber: data.employeeNumber,
-          branch: data.branch,
+          branch: data.branch[0].value,
           profile: data.profile[0].value,
           documentAttachment: data.documentAttachment,
           modifiedBy: data.modifiedBy,
           modifiedOn: data.modifiedOn,
-         }
-      })
+        },
+      });
       toast({
         title: "App Settings Updated",
         description: (
@@ -190,10 +212,10 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
       });
       reset();
       navigate("/administration/user-details");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage =
-      error.graphQLErrors?.[0]?.extensions?.response?.body?.message ||
+        error.graphQLErrors?.[0]?.extensions?.response?.body?.message ||
         "Unknown error";
       toast({
         title: "Error",
@@ -201,14 +223,14 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
         variant: "destructive",
       });
     }
-  }
+  };
 
   const onSubmit = async (data: UserDetailsInput) => {
     if (isEditMode) {
       handleEdit(data);
     } else {
       handleCreate(data);
-    } 
+    }
   };
 
   const onCancel = () => {
@@ -218,7 +240,7 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
   const [defaultModifiedOn, setDefaultModifiedOn] = useState(
     new Date().toISOString()
   );
-  
+
   const { data: userData } = useQuery(queryUser, {
     variables: {
       userId: id ? id : "",
@@ -245,21 +267,41 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
   useEffect(() => {
     if (isEditMode) {
       if (userData) {
-        const { username, firstName, middleName, lastName, email, password, confirmPassword, phoneNumber, employeeNumber, branch, profile, documentAttachment } = userData.user;
-        const newProfile = [{
-          label: profile.name,
-          value: profile.id
-        }]
+        const {
+          username,
+          firstName,
+          middleName,
+          lastName,
+          email,
+          password,
+          phoneNumber,
+          employeeNumber,
+          branch,
+          profile,
+          documentAttachment,
+        } = userData.user;
+        const newProfile = [
+          {
+            label: profile.name,
+            value: profile.id,
+          },
+        ];
+        const newBranch = [
+          {
+            label: branch,
+            value: branch,
+          },
+        ];
         setValue("username", username);
         setValue("firstName", firstName);
         setValue("middleName", middleName);
         setValue("lastName", lastName);
         setValue("email", email);
         setValue("password", password);
-        setValue("confirmPassword", confirmPassword);
+        setValue("confirmPassword", password);
         setValue("phoneNumber", phoneNumber);
         setValue("employeeNumber", employeeNumber);
-        setValue("branch", branch);
+        setValue("branch", newBranch);
         setValue("profile", newProfile);
         setValue("documentAttachment", documentAttachment);
       }
@@ -268,30 +310,50 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
       const storedString = localStorage.getItem("copyUser");
       if (storedString !== null) {
         const storedUser = JSON.parse(storedString);
-        const { username, firstName, middleName, lastName, email, password, confirmPassword, phoneNumber, employeeNumber, branch, profile, documentAttachment } = storedUser;
-        const copyProfile = [{
-          label: profile.name,
-          value: profile.id
-        }]
+        const {
+          username,
+          firstName,
+          middleName,
+          lastName,
+          email,
+          password,
+          phoneNumber,
+          employeeNumber,
+          branch,
+          profile,
+          documentAttachment,
+        } = storedUser;
+        const copyProfile = [
+          {
+            label: profile.name,
+            value: profile.id,
+          },
+        ];
+        const newBranch = [
+          {
+            label: branch,
+            value: branch,
+          },
+        ];
         setValue("username", username);
         setValue("firstName", firstName);
         setValue("middleName", middleName);
         setValue("lastName", lastName);
         setValue("email", email);
         setValue("password", password);
-        setValue("confirmPassword", confirmPassword);
+        setValue("confirmPassword", password);
         setValue("phoneNumber", phoneNumber);
         setValue("employeeNumber", employeeNumber);
-        setValue("branch", branch);
+        setValue("branch", newBranch);
         setValue("profile", copyProfile);
         setValue("documentAttachment", documentAttachment);
       }
     }
-    
-  },[userData, isEditMode, setValue, isCopyMode, storedUser])
+  }, [userData, isEditMode, setValue, isCopyMode, storedUser]);
 
   return (
     <section className="flex justify-between w-full">
+
       <form
         className="grid w-full grid-cols-4 gap-8"
         onSubmit={handleSubmit(onSubmit)}
@@ -440,12 +502,21 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
           <Label htmlFor="branch" className="text-base">
             Branch
           </Label>
-          <Input
-            {...register("branch")}
-            placeholder="Branch"
-            type="text"
-            className="h-12 text-base"
-            autoComplete="false"
+          <Controller
+            name="branch"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <MultiSelect
+                  options={branchList}
+                  selected={value}
+                  onChange={onChange}
+                  selectLimit={1}
+                  placeholder="Select Branch"
+                  className="w-full"
+                />
+              </>
+            )}
           />
           {errors.branch && (
             <span className="text-red-500">{errors.branch.message}</span>
@@ -524,9 +595,7 @@ const UserDetailsForm: FC<UserDetailsFormProps> = ({ user }) => {
             <span className="text-red-500">{errors.modifiedOn.message}</span>
           )}
         </div>
-        {errorMessage && (
-          <span className="text-center text-red-500">{errorMessage}</span>
-        )}
+
         <div className="flex col-span-3 gap-2">
           <Button
             type="submit"

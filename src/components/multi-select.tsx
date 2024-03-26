@@ -92,75 +92,73 @@ function MultiSelect({
           <span className="sr-only">Toggle theme</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start" asChild>
-       <div className="w-[100%]">
-       <Command className={className} >
-          <CommandInput placeholder="Search..." />
-          <CommandList >
-            <CommandEmpty>No results found</CommandEmpty>
-            <CommandGroup className="w-full overflow-auto max-h-64">
-              {options.map((option) => {
-                const isSelected = selected?.some(
-                  (item) => item.value === option.value
-                );
-                
-                return (
-                  <CommandItem
-                    key={option.value}
-                    onSelect={() => {
-                      
-                      //add option to selected
-                      const updatedSelected = selected || [];
-                      const isOptionSelected = updatedSelected.some(
-                        (item) => item.value === option.value
-                      );
+      <PopoverContent className="w-full p-0" align="start">
+          <Command className={className}>
+            <CommandInput placeholder="Search..." />
+            <CommandList>
+              <CommandEmpty>No results found</CommandEmpty>
+              <CommandGroup className="w-full overflow-auto max-h-64">
+                {options.map((option) => {
+                  const isSelected = selected?.some(
+                    (item) => item.value === option.value
+                  );
+                  return (
+                    <>
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => {
+                          //add option to selected
+                          const updatedSelected = selected || [];
+                          const isOptionSelected = updatedSelected.some(
+                            (item) => item.value === option.value
+                          );
 
-                      // Toggle selection status
-                      const updatedSelection = isOptionSelected
-                        ? updatedSelected.filter(
-                            (item) => item.value !== option.value
-                          ) // Unselect
-                        : [...updatedSelected, option]; // Select
-                      const isWithinLimit = updatedSelection.length <= selectLimit;
-                      if (isWithinLimit) {
-                        onChange(updatedSelection);
-                      }
-                      setOpen(true);
-                    }}
-                    className="w-full"
-                    
-                  >
-                    <div
-                      className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "opacity-50 [&_svg]:invisible"
-                      )}
+                          // Toggle selection status
+                          const updatedSelection = isOptionSelected
+                            ? updatedSelected.filter(
+                                (item) => item.value !== option.value
+                              ) // Unselect
+                            : [...updatedSelected, option]; // Select
+                          const isWithinLimit =
+                            updatedSelection.length <= selectLimit;
+                          if (isWithinLimit) {
+                            onChange(updatedSelection);
+                          }
+                          setOpen(true);
+                        }}
+                        className="w-full"
+                      >
+                        <div
+                          className={cn(
+                            "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "opacity-50 [&_svg]:invisible"
+                          )}
+                        >
+                          <CheckIcon className={cn("h-4 w-4")} />
+                        </div>
+                        <span>{option.label}</span>
+                      </CommandItem>
+                    </>
+                  );
+                })}
+              </CommandGroup>
+              {selected && selected?.length > 0 && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup className="w-full">
+                    <CommandItem
+                      onSelect={() => selected.length > 0 && onChange([])}
+                      className="justify-center text-center"
                     >
-                      <CheckIcon className={cn("h-4 w-4")} />
-                    </div>
-                    <span>{option.label}</span>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-            {selected && selected?.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup className="w-full">
-                  <CommandItem
-                    onSelect={() => selected.length > 0 && onChange([])}
-                    className="justify-center text-center"
-                  >
-                    Clear filters
-                  </CommandItem>
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-       </div>
+                      Clear filters
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
       </PopoverContent>
     </Popover>
   );

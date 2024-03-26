@@ -16,6 +16,7 @@ import { gql, useQuery } from "@apollo/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppState } from "@/store/state";
 import { toast } from "../ui/use-toast";
+import CurrencySelector from "../currencies/currency-selector";
 
 const businessRetailSchema = z.object({
   productTypes: z.string().min(3, { message: "Product Types is required" }),
@@ -134,24 +135,7 @@ const Products: FC<ProductsProps> = () => {
             </div>
             <div>
               <Label htmlFor="accountCurrency">Account Currency</Label>
-              <Controller
-                control={control}
-                name="accountCurrency"
-                render={({ field: { onChange, value } }) => (
-                  <Select onValueChange={onChange} value={value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Account Currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
-                      <SelectItem value="CAD">CAD</SelectItem>
-                      <SelectItem value="AUD">AUD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+              <CurrencySelector control={control} name="accountCurrency"/>
               {errors.accountCurrency && (
                 <div className="text-red-500">
                   {errors.accountCurrency.message}
